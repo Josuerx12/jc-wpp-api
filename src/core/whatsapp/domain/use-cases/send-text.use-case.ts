@@ -2,7 +2,7 @@ import {
   fetchLatestBaileysVersion,
   useMultiFileAuthState,
 } from "@whiskeysockets/baileys";
-import { UseCase } from "../../../../contracts/use-case.interface";
+import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { ISessionRepository } from "../contracts/session.interface";
 import makeWASocket, { DisconnectReason } from "baileys";
 import { Boom } from "@hapi/boom";

@@ -1,7 +1,7 @@
 import express from "express";
-import { connectDB } from "./config/db";
+import { connectDB } from "./shared/infra/config/db";
 import { config } from "dotenv";
-import router from "./routes/router";
+import router from "./shared/infra/routes/router";
 config();
 
 connectDB();

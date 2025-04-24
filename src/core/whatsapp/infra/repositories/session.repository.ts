@@ -20,10 +20,9 @@ export class SessionRepository implements ISessionRepository {
 
   async createOrUpdate(entity: any): Promise<any> {
     const session = await this.sessionModel.findOneAndUpdate(
-      { cpf: entity.cpf },
+      { sessionId: entity.sessionId },
       {
-        cpf: entity.cpf,
-        name: entity.name,
+        userId: entity.userId,
         sessionId: entity.sessionId,
         authPath: entity.authPath,
       },

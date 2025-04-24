@@ -1,4 +1,4 @@
-import { UseCase } from "../../../../contracts/use-case.interface";
+import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { ISessionRepository } from "../contracts/session.interface";
 import QRCode from "qrcode";
 import { v4 } from "uuid";
@@ -59,8 +59,7 @@ export class CreateConnectWithWppUseCase
           try {
             if (!session) {
               await this.repository.createOrUpdate({
-                cpf: input.cpf,
-                name: input.name,
+                userId: input.userId,
                 sessionId,
                 authPath,
               });
@@ -70,11 +69,8 @@ export class CreateConnectWithWppUseCase
 
             resolved = true;
 
-            sock.end(null);
-
             resolve({ sessionId });
           } catch (error) {
-            sock.end(null);
             reject(new Error("Erro ao salvar sessão no banco de dados"));
           }
         }
@@ -104,8 +100,7 @@ export class CreateConnectWithWppUseCase
 }
 
 export type CreateConnectionWppInput = {
-  cpf?: string;
-  name?: string;
+  userId: string;
   sessionId?: string;
 };
 
