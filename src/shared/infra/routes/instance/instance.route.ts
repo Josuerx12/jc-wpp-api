@@ -12,24 +12,19 @@ const sendTextUseCase = new SendTextUseCase(sessionRepo);
 
 // Criar conexão com wpp.
 instanceRouter.post("/create", async (req, res) => {
-  try {
-    const userId = req.body.userId;
-    const instance = req?.body?.sessionId;
+  const userId = req.body.userId;
+  const instance = req?.body?.sessionId;
 
-    const { qrCode, instanceId } = await createConnectionUseCase.execute({
-      userId,
-      instanceId: instance,
-    });
+  const { qrCode, instanceId } = await createConnectionUseCase.execute({
+    userId,
+    instanceId: instance,
+  });
 
-    res.json({
-      message: "Instancia criada com sucesso",
-      instanceId,
-      qrCode,
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Erro ao conectar" });
-  }
+  res.json({
+    message: "Instancia criada com sucesso",
+    instanceId,
+    qrCode,
+  });
 });
 
 // Enviar mensagem
@@ -40,17 +35,12 @@ instanceRouter.post("/:sessionId/send-text", async (req, res) => {
     res.status(400).json({ error: "Número e mensagem são obrigatórios" });
   }
 
-  try {
-    const result = await sendTextUseCase.execute({
-      message,
-      to: number,
-      sessionId: req.params.sessionId,
-    });
-    res.json(result);
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).json({ error: err.message });
-  }
+  const result = await sendTextUseCase.execute({
+    message,
+    to: number,
+    sessionId: req.params.sessionId,
+  });
+  res.json(result);
 });
 
 export default instanceRouter;

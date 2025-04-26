@@ -15,43 +15,28 @@ const updateUserUseCase = new UpdateUserUseCase(userRepo);
 const getUserLoggedUseCase = new GetUserLoggedUseCase(userRepo);
 
 userRouter.post("/", async (req, res) => {
-  try {
-    const result = await createUserUseCase.execute(req.body);
+  const result = await createUserUseCase.execute(req.body);
 
-    res.json({
-      message: "Usuário criado com sucesso!",
-      data: result,
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Erro ao criar usuário" });
-  }
+  res.json({
+    message: "Usuário criado com sucesso!",
+    data: result,
+  });
 });
 
 userRouter.put("/:userId", async (req, res) => {
   const id = req.params.userId;
 
-  try {
-    const result = await updateUserUseCase.execute({
-      id,
-      ...req.body,
-    });
-    res.json({ message: "Usuário editado com sucesso!", result });
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).json({ error: err.message });
-  }
+  const result = await updateUserUseCase.execute({
+    id,
+    ...req.body,
+  });
+  res.json({ message: "Usuário editado com sucesso!", result });
 });
 
 userRouter.get("/user-logged", checkAuth, async (req, res) => {
-  try {
-    const result = await getUserLoggedUseCase.execute(req.user as any);
+  const result = await getUserLoggedUseCase.execute(req.user as any);
 
-    res.json(result);
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).json({ error: err.message });
-  }
+  res.json(result);
 });
 
 export default userRouter;
