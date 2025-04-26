@@ -3,12 +3,12 @@ import {
   useMultiFileAuthState,
 } from "@whiskeysockets/baileys";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
-import { ISessionRepository } from "../contracts/instance.interface";
 import makeWASocket, { DisconnectReason } from "baileys";
 import { Boom } from "@hapi/boom";
+import { IInstanceRepository } from "../contracts/instance.interface";
 
 export class SendTextUseCase implements UseCase<SendTextInput, void> {
-  constructor(private readonly repository: ISessionRepository) {}
+  constructor(private readonly repository: IInstanceRepository) {}
 
   async execute(input: SendTextInput): Promise<void> {
     const session = await this.repository.getById(input.sessionId);

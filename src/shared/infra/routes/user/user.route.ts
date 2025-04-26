@@ -1,3 +1,4 @@
+import "../../../types/express";
 import { Router } from "express";
 import { UserRepository } from "../../../../core/user/infra/repositories/user.repository";
 import { CreateUserUseCase } from "../../../../core/user/domain/use-cases/create-user.use-case";
