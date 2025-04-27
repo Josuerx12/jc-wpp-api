@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
 import { User } from "../../../core/user/domain/entities/user.entity";
+import { config } from "dotenv";
+config();
 
 export function checkAuth(
   req: Request,

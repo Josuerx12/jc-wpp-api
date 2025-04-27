@@ -2,6 +2,8 @@ import { sign } from "jsonwebtoken";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
 import { User } from "../../../user/domain/entities/user.entity";
+import { config } from "dotenv";
+config();
 
 export class LoginUseCase implements UseCase<LoginInput, LoginOutput> {
   constructor(private readonly repository: IUserRepository) {}
