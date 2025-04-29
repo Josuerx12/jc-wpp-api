@@ -10,6 +10,9 @@ export class GetUserLoggedUseCase
   async execute(input: GetUserLoggedInput): Promise<GetUserLoggedOutput> {
     const user = await this.repository.getById(input.user.userId);
 
+    delete user.password;
+    delete user.code;
+
     return {
       data: user,
     };

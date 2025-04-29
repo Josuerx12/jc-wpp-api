@@ -34,7 +34,7 @@ userRouter.put("/:userId", async (req, res) => {
 });
 
 userRouter.get("/user-logged", checkAuth, async (req, res) => {
-  const result = await getUserLoggedUseCase.execute(req.user as any);
+  const result = await getUserLoggedUseCase.execute({ user: req.user as any });
 
   res.json(result);
 });
