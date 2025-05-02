@@ -21,7 +21,7 @@ authRouter.post("/login", async (req, res) => {
 authRouter.post("/pre-register", async (req, res) => {
   await preRegisterUseCase.execute(req.body);
 
-  res.status(201);
+  res.status(201).end();
 });
 
 export default authRouter;
