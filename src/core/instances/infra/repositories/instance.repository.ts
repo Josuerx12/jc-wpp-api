@@ -10,9 +10,19 @@ export class InstanceRepository implements IInstanceRepository {
       instanceId: id,
     });
 
-    const instance = new InstanceEntity(model);
+    const instance = model ? new InstanceEntity(model) : null;
 
     return instance;
+  }
+
+  async getAllUserInstances(userId: string): Promise<InstanceEntity[]> {
+    const models = await this.instanceModel.find({
+      userId,
+    });
+
+    const entities = models?.map((m) => new InstanceEntity(m));
+
+    return entities;
   }
 
   async getAll(): Promise<InstanceEntity[]> {
@@ -37,5 +47,10 @@ export class InstanceRepository implements IInstanceRepository {
     const instance = new InstanceEntity(modelInserted);
 
     return instance;
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.instanceModel.deleteOne({ instanceId: id });
+    return;
   }
 }

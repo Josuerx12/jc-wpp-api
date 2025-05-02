@@ -17,6 +17,7 @@ export class CreateInstanceUseCase
 
   async execute(input: CreateConnectionWppInput): Promise<ConnectionWppOutput> {
     const instanceId = input.instanceId ?? v4();
+    const { userId } = input;
 
     const instance = await this.repository.getById(instanceId);
 
@@ -40,6 +41,7 @@ export class CreateInstanceUseCase
 
     return new Promise<ConnectionWppOutput>((resolve, reject) => {
       let resolved = false;
+      let connected = false;
 
       sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect, qr } = update;
@@ -48,7 +50,12 @@ export class CreateInstanceUseCase
           try {
             const qrCodeBase64 = await QRCode.toDataURL(qr);
             resolved = true;
-            resolve({ qrCode: qrCodeBase64, instanceId });
+            resolve({
+              qrCode: qrCodeBase64,
+              instanceId,
+              message:
+                "Foi criada uma nova conexão para a instancia, conecte-se via qr-code.",
+            });
           } catch (error) {
             reject(new Error("Erro ao gerar QR Code"));
           }
@@ -59,26 +66,26 @@ export class CreateInstanceUseCase
           try {
             if (!instance) {
               await this.repository.createOrUpdate({
-                userId: input.userId,
+                userId,
                 instanceId,
                 authPath,
               });
+            } else {
+              await this.repository.createOrUpdate({
+                ...instance,
+              });
             }
 
-            await this.repository.createOrUpdate({
-              ...instance,
-            });
+            connected = true;
 
-            resolved = true;
-
-            resolve({ instanceId });
+            resolve({ instanceId, message: "Instancia já conectada!" });
           } catch (error) {
             console.log(error);
             reject(new Error("Erro ao salvar instancia no banco de dados"));
           }
         }
 
-        if (connection === "close") {
+        if (connection === "close" && !connected) {
           const statusCode = (lastDisconnect.error as Boom)?.output?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
@@ -87,12 +94,19 @@ export class CreateInstanceUseCase
             setTimeout(() => this.execute({ ...input, instanceId }), 3000);
           } else {
             console.log(
-              `⚠️ Instancia ${instanceId} deslogada. Requer novo QR Code.`
+              `⚠️ Instancia ${instanceId} deslogada. Recriando sessão...`
             );
-            if (!resolved) {
-              resolved = true;
-              reject(new Error("Instancia deslogada. Requer novo QR Code."));
+
+            try {
+              fs.rmSync(authPath, { recursive: true, force: true });
+              console.log(`🗑️ Sessão removida para ${instanceId}`);
+            } catch (err) {
+              console.error("Erro ao remover authPath:", err);
             }
+
+            this.execute({ userId, instanceId }).then(resolve).catch(reject);
+
+            resolved = true;
           }
         }
       });
@@ -109,5 +123,6 @@ export type CreateConnectionWppInput = {
 
 export type ConnectionWppOutput = {
   instanceId: string;
+  message: string;
   qrCode?: string;
 };

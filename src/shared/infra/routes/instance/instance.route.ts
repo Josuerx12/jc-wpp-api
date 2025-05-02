@@ -2,29 +2,52 @@ import { Router } from "express";
 import { CreateInstanceUseCase } from "../../../../core/instances/domain/use-cases/create-instance.use-case";
 import { InstanceRepository } from "../../../../core/instances/infra/repositories/instance.repository";
 import { SendTextUseCase } from "../../../../core/instances/domain/use-cases/send-text.use-case";
+import { checkAuth } from "../../middlewares/check-auth.middleware";
+import { InstanceListUseCase } from "../../../../core/instances/domain/use-cases/instance-list.use-case";
+import { DeleteInstanceUseCase } from "../../../../core/instances/domain/use-cases/delete-instance.use-case";
 
 const instanceRouter = Router();
 
 const sessionRepo = new InstanceRepository();
 
 const createConnectionUseCase = new CreateInstanceUseCase(sessionRepo);
+const instanceListUseCase = new InstanceListUseCase(sessionRepo);
+const deleteInstanceUseCase = new DeleteInstanceUseCase(sessionRepo);
 const sendTextUseCase = new SendTextUseCase(sessionRepo);
 
 // Criar conexão com wpp.
-instanceRouter.post("/create", async (req, res) => {
-  const userId = req.body.userId;
-  const instance = req?.body?.sessionId;
+instanceRouter.post("/create", checkAuth, async (req, res) => {
+  const userId = req?.user?.userId;
+  const instance = req?.body?.instanceId;
 
-  const { qrCode, instanceId } = await createConnectionUseCase.execute({
-    userId,
-    instanceId: instance,
-  });
+  const { qrCode, instanceId, message } = await createConnectionUseCase.execute(
+    {
+      userId,
+      instanceId: instance,
+    }
+  );
 
   res.json({
-    message: "Instancia criada com sucesso",
+    message,
     instanceId,
     qrCode,
   });
+});
+
+// Lista conexões
+
+instanceRouter.get("/", checkAuth, async (req, res) => {
+  const response = await instanceListUseCase.execute({ user: req.user });
+
+  res.status(200).json(response);
+});
+
+// Lista conexões
+
+instanceRouter.delete("/:id", checkAuth, async (req, res) => {
+  await deleteInstanceUseCase.execute({ instanceId: req.params.id });
+
+  res.status(200).end();
 });
 
 // Enviar mensagem
