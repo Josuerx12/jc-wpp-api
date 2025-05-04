@@ -2,11 +2,13 @@ import { Router } from "express";
 import instanceRouter from "./instance/instance.route";
 import userRouter from "./user/user.route";
 import authRouter from "./auth/auth.route";
+import sseRouter from "./sse/sse.route";
 
 const router = Router();
 
 router.use("/instance", instanceRouter);
 router.use("/users", userRouter);
 router.use("/auth", authRouter);
+router.use("/sse", sseRouter);
 
 export default router;
