@@ -9,7 +9,7 @@ import {
 import makeWASocket, { DisconnectReason } from "baileys";
 import { Boom } from "@hapi/boom";
 import { IInstanceRepository } from "../contracts/instance.interface";
-import { getEmitter } from "../../../../shared/infra/events/sse-event.emitter";
+import { instanceEvents } from "../../../../shared/infra/events/sse-event.emitter";
 
 export class CreateInstanceUseCase
   implements UseCase<CreateConnectionWppInput, ConnectionWppOutput>
@@ -72,11 +72,7 @@ export class CreateInstanceUseCase
                 authPath,
               });
 
-              getEmitter(instanceId).emit("connected", {
-                instanceId,
-                userId,
-                message: "Instância conectada!",
-              });
+              instanceEvents.emit("instance_connected", { instanceId });
             } else {
               await this.repository.createOrUpdate({
                 ...instance,
