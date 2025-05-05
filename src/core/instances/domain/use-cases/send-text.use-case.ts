@@ -43,7 +43,11 @@ export class SendTextUseCase implements UseCase<SendTextInput, void> {
             messageSent = true;
 
             console.log("📨 Mensagem enviada com sucesso.");
-            sock.end(null);
+
+            setTimeout(() => {
+              sock.end(null);
+              resolve();
+            }, 3000);
             resolve();
           } catch (err) {
             sock.end(null);

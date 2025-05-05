@@ -82,6 +82,11 @@ export class CreateInstanceUseCase
             connected = true;
 
             resolve({ instanceId, message: "Instancia já conectada!" });
+            if (connected) {
+              setTimeout(() => {
+                sock.end(null);
+              }, 3000);
+            }
           } catch (error) {
             console.log(error);
             reject(new Error("Erro ao salvar instancia no banco de dados"));
