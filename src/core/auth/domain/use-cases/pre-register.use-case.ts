@@ -1,4 +1,7 @@
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
+import { MailEntity } from "../../../mail/domain/entites/mail.entity";
+import { generatePreRegisterEmailHTML } from "../../../mail/domain/templates/pre-register.mail";
+import { mail } from "../../../mail/infra/transporter";
 import { IPreRegisterRepository } from "../contracts/pre-register.interface";
 import { PreRegisterEntity } from "../entities/pre-register.entity";
 
@@ -30,6 +33,14 @@ export class PreRegisterUseCase
     const preRegister = new PreRegisterEntity(input);
 
     await this.repository.create(preRegister);
+
+    mail.sendMail(
+      new MailEntity({
+        to: preRegister.email,
+        subject: "Pré-cadastro JCWPPAPI realizado com sucesso!",
+        html: generatePreRegisterEmailHTML(preRegister.name),
+      })
+    );
   }
 }
 
