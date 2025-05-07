@@ -25,37 +25,44 @@ export class ApproveRegisterUseCase
   ) {}
 
   async execute(input: ApproveRegisterInput): Promise<void> {
-    const preRegister = await this.preRegisterRepo.getById(input.id);
+    try {
+      const preRegister = await this.preRegisterRepo.getById(input.id);
 
-    if (input.user && input.user.role === UserRoles.USER) {
-      throw new AppError("Você não tem permissão para acessar essa rota", 401);
+      if (input.user && input.user.role === UserRoles.USER) {
+        throw new AppError(
+          "Você não tem permissão para acessar essa rota",
+          401
+        );
+      }
+
+      if (!preRegister) {
+        throw new AppError("Nenhum pre registro encontrado para esse id.", 400);
+      }
+
+      const generatedPass = GenerateRandomString(8);
+
+      const user = new User({
+        userId: v4(),
+        name: preRegister.name,
+        document: preRegister.document,
+        email: preRegister.email,
+        password: generatedPass,
+        isTempPass: true,
+      });
+
+      await this.userRepo.create(user);
+
+      mail.sendMail(
+        new MailEntity({
+          to: user.email,
+          subject: "Cadastro aprovado - Acesse sua conta na JCWPPAPI!",
+          html: generateApprovedRegisterEmailHTML(user.name, generatedPass),
+        })
+      );
+
+      await this.preRegisterRepo.delete(preRegister.preRegisterId);
+    } catch (error: any) {
+      throw new AppError(error.message, 400);
     }
-
-    if (!preRegister) {
-      throw new AppError("Nenhum pre registro encontrado para esse id.", 400);
-    }
-
-    const generatedPass = GenerateRandomString(8);
-
-    const user = new User({
-      userId: v4(),
-      name: preRegister.name,
-      document: preRegister.document,
-      email: preRegister.email,
-      password: generatedPass,
-      isTempPass: true,
-    });
-
-    await this.userRepo.create(user);
-
-    mail.sendMail(
-      new MailEntity({
-        to: user.email,
-        subject: "Cadastro aprovado - Acesse sua conta na JCWPPAPI!",
-        html: generateApprovedRegisterEmailHTML(user.name, generatedPass),
-      })
-    );
-
-    await this.preRegisterRepo.delete(preRegister.preRegisterId);
   }
 }
