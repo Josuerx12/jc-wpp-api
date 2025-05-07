@@ -48,7 +48,7 @@ export class ApproveRegisterUseCase
 
     await this.userRepo.create(user);
 
-    await mail.sendMail(
+    mail.sendMail(
       new MailEntity({
         to: user.email,
         subject: "Cadastro aprovado - Acesse sua conta na JCWPPAPI!",
