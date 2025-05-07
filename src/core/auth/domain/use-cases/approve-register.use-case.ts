@@ -55,5 +55,7 @@ export class ApproveRegisterUseCase
         html: generateApprovedRegisterEmailHTML(user.name, generatedPass),
       })
     );
+
+    await this.preRegisterRepo.delete(preRegister.preRegisterId);
   }
 }
