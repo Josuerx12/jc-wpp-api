@@ -1,5 +1,5 @@
 import { compare, compareSync, genSaltSync, hashSync } from "bcryptjs";
-import { IUser } from "../../infra/models/user.model";
+import { IUser, UserRoles } from "../../infra/models/user.model";
 
 export class User {
   userId: string;
@@ -7,6 +7,8 @@ export class User {
   document: string;
   email: string;
   password: string;
+  isTempPass: boolean;
+  role: UserRoles;
   code: string;
   createdAt: Date;
   updatedAt: Date;
@@ -17,6 +19,8 @@ export class User {
     this.document = props.document;
     this.email = props.email;
     this.password = this.setPassword(props.password);
+    this.isTempPass = props.isTempPass;
+    this.role = props.role ? props.role : UserRoles.USER;
     this.code = props.code;
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();
