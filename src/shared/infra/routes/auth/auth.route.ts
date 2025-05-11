@@ -10,7 +10,10 @@ const preRegisterRepository = new PreRegisterRepository();
 const userRepository = new UserRepository();
 
 const loginUseCase = new LoginUseCase(userRepository);
-const preRegisterUseCase = new PreRegisterUseCase(preRegisterRepository);
+const preRegisterUseCase = new PreRegisterUseCase(
+  preRegisterRepository,
+  userRepository
+);
 
 authRouter.post("/login", async (req, res) => {
   const payload = await loginUseCase.execute(req.body);
