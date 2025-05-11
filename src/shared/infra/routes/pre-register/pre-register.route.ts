@@ -30,8 +30,11 @@ preRegisterRouter.post("/approve", checkAuth, async (req, res) => {
   res.status(204).end();
 });
 
-preRegisterRouter.get("/", async (req, res) => {
-  const payload = await getAllPreRegisterUseCase.execute();
+preRegisterRouter.get("/", checkAuth, async (req, res) => {
+  const payload = await getAllPreRegisterUseCase.execute({
+    ...req.query,
+    user: req.user,
+  });
 
   res.status(200).json({ payload });
 });

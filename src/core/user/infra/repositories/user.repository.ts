@@ -26,7 +26,11 @@ export class UserRepository implements IUserRepository {
   async getAll(): Promise<User[]> {
     const users = await this.model.find().lean();
 
-    const entities = users.map((u) => new User(u as any));
+    const entities = users.map((u) => {
+      delete u.password;
+
+      return new User(u as any);
+    });
 
     return entities;
   }
