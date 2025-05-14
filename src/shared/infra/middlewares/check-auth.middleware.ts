@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
 import { User } from "../../../core/user/domain/entities/user.entity";
 import { config } from "dotenv";
+import authStorage from "../routes/auth/auth.storage";
 config();
 
 export function checkAuth(
@@ -24,7 +25,11 @@ export function checkAuth(
       process.env.SECRET as string
     );
 
-    req.user = decoded.sub as unknown as User;
+    const user = decoded.sub as unknown as User;
+
+    req.user = user;
+
+    authStorage.set().user(user);
 
     next();
   } catch (error) {
