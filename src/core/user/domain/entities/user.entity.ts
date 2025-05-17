@@ -1,5 +1,6 @@
 import { compare, compareSync, genSaltSync, hashSync } from "bcryptjs";
 import { IUser, UserRoles } from "../../infra/models/user.model";
+import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 
 export class User {
   userId: string;
@@ -44,13 +45,13 @@ export class User {
     newPassword: string
   ): Promise<void> {
     if (!this.password) {
-      throw new Error("Senha não está definida.");
+      throw new AppError("Senha não está definida.");
     }
 
     const isMatch = await compare(oldPassword, this.password);
 
     if (!isMatch) {
-      throw new Error("Senha atual incorreta.");
+      throw new AppError("Senha atual incorreta.");
     }
 
     this.password = this.setPassword(newPassword);
@@ -58,18 +59,39 @@ export class User {
 
   resetPasswordWithCode(code: string, newPassword: string) {
     if (!this.code || this.code !== code) {
-      throw new Error("Código inválido ou expirado.");
+      throw new AppError("Código inválido ou expirado.");
     }
 
     this.password = this.setPassword(newPassword);
     this.code = undefined;
   }
 
+  generateCode() {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    this.code = code;
+  }
+
+  isSuper() {
+    return this.role === UserRoles.SUPER;
+  }
+
+  isAdmin() {
+    return this.role === UserRoles.ADMIN;
+  }
+
+  isUser() {
+    return this.role === UserRoles.USER;
+  }
+
+  isTempPassword() {
+    return this.isTempPass;
+  }
+
   verifyPassword(password: string) {
     const compare = compareSync(password, this.password!);
 
     if (!compare) {
-      throw new Error("Credenciais invalidas!");
+      throw new AppError("Credenciais invalidas!", 400);
     }
   }
 }

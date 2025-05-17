@@ -6,7 +6,21 @@ export class UserRepository implements IUserRepository {
   private model = UserModel;
 
   async getById(id: string): Promise<User> {
-    const user = (await this.model.findOne({ userId: id })).toJSON();
+    const user = await this.model.findOne({ userId: id });
+
+    return user ? new User(user as any) : null;
+  }
+
+  async getByCode(code: string): Promise<User> {
+    const user = await this.model.findOne({ code });
+
+    return user ? new User(user as any) : null;
+  }
+
+  async getByDocumentOrEmail(credential: string): Promise<User> {
+    const user = await this.model.findOne({
+      $or: [{ email: credential }, { document: credential }],
+    });
 
     return user ? new User(user as any) : null;
   }

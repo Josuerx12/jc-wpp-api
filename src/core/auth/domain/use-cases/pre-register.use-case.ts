@@ -4,6 +4,8 @@ import { MailEntity } from "../../../mail/domain/entites/mail.entity";
 import { generatePreRegisterEmailHTML } from "../../../mail/domain/templates/pre-register.mail";
 import { mail } from "../../../mail/infra/transporter";
 import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
+import { DocumentVO } from "../../../user/domain/vo/document.vo";
+import { EmailVO } from "../../../user/domain/vo/email.vo";
 import { IPreRegisterRepository } from "../contracts/pre-register.interface";
 import { PreRegisterEntity } from "../entities/pre-register.entity";
 
@@ -16,12 +18,15 @@ export class PreRegisterUseCase
   ) {}
   async execute(input: PreRegisterInput): Promise<void> {
     try {
+      const email = EmailVO.create(input.email);
+      const document = DocumentVO.create(input.document.replace(/\D/g, ""));
+
       const emailAlreadyPreRegistered = await this.repository.getByEmail(
-        input.email
+        email.value
       );
 
       const emailAlreadyRegistered = await this.userRepo.getByEmail(
-        input.email
+        email.value
       );
 
       if (emailAlreadyPreRegistered || emailAlreadyRegistered) {
@@ -32,11 +37,11 @@ export class PreRegisterUseCase
       }
 
       const documentAlreadyPreRegistered = await this.repository.getByDocument(
-        input.document
+        document.value
       );
 
       const documentAlreadyRegistered = await this.userRepo.getByDocument(
-        input.document
+        document.value
       );
 
       if (documentAlreadyPreRegistered || documentAlreadyRegistered) {
@@ -46,7 +51,11 @@ export class PreRegisterUseCase
         );
       }
 
-      const preRegister = new PreRegisterEntity(input);
+      const preRegister = new PreRegisterEntity({
+        ...input,
+        document: document.value,
+        email: email.value,
+      });
 
       await this.repository.create(preRegister);
 

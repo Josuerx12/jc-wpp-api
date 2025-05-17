@@ -10,9 +10,9 @@ type StoreData = {
 class AuthStorage {
   private als = new AsyncLocalStorage<StoreData>();
 
-  middleware(req: Request, res: Response, next: NextFunction) {
+  middleware = (req: Request, res: Response, next: NextFunction) => {
     this.als.run({}, () => next());
-  }
+  };
 
   set() {
     const store = this.als.getStore();

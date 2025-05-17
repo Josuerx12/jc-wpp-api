@@ -1,12 +1,13 @@
-import { Router } from "express";
+import { Request, Router } from "express";
 import { CreateInstanceUseCase } from "../../../../core/instances/domain/use-cases/create-instance.use-case";
 import { InstanceRepository } from "../../../../core/instances/infra/repositories/instance.repository";
 import { SendTextUseCase } from "../../../../core/instances/domain/use-cases/send-text.use-case";
 import { checkAuth } from "../../middlewares/check-auth.middleware";
 import { InstanceListUseCase } from "../../../../core/instances/domain/use-cases/instance-list.use-case";
 import { DeleteInstanceUseCase } from "../../../../core/instances/domain/use-cases/delete-instance.use-case";
+import authStorage from "../auth/auth.storage";
 
-const instanceRouter = Router();
+const instanceRouter: Router = Router();
 
 const sessionRepo = new InstanceRepository();
 
@@ -16,14 +17,15 @@ const deleteInstanceUseCase = new DeleteInstanceUseCase(sessionRepo);
 const sendTextUseCase = new SendTextUseCase(sessionRepo);
 
 // Criar conexão com wpp.
-instanceRouter.post("/create", checkAuth, async (req, res) => {
-  const userId = req?.user?.userId;
+instanceRouter.post("/create", checkAuth, async (req: Request, res) => {
   const instance = req?.body?.instanceId;
+
+  const user = authStorage.get().user();
 
   const { qrCode, instanceId, message } = await createConnectionUseCase.execute(
     {
-      userId,
       instanceId: instance,
+      userId: user.userId,
     }
   );
 
@@ -37,7 +39,9 @@ instanceRouter.post("/create", checkAuth, async (req, res) => {
 // Lista conexões
 
 instanceRouter.get("/", checkAuth, async (req, res) => {
-  const response = await instanceListUseCase.execute({ user: req.user });
+  const user = authStorage.get().user();
+
+  const response = await instanceListUseCase.execute({ user });
 
   res.status(200).json(response);
 });

@@ -3,6 +3,7 @@ import { UseCase } from "../../../../shared/domain/contracts/use-case.interface"
 import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
 import { User } from "../../../user/domain/entities/user.entity";
 import { config } from "dotenv";
+import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 config();
 
 export class LoginUseCase implements UseCase<LoginInput, LoginOutput> {
@@ -12,7 +13,7 @@ export class LoginUseCase implements UseCase<LoginInput, LoginOutput> {
     const user = await this.repository.getByEmail(input.email);
 
     if (!user) {
-      throw new Error("Verifique as credenciais e tente novamente.");
+      throw new AppError("Verifique as credenciais e tente novamente.", 400);
     }
 
     user.verifyPassword(input.password);

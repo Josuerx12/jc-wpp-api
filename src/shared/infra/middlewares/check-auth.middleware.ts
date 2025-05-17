@@ -3,13 +3,16 @@ import { verify } from "jsonwebtoken";
 import { User } from "../../../core/user/domain/entities/user.entity";
 import { config } from "dotenv";
 import authStorage from "../routes/auth/auth.storage";
+import { UserRepository } from "../../../core/user/infra/repositories/user.repository";
 config();
 
-export function checkAuth(
+export async function checkAuth(
   req: Request,
   res: Response,
   next: NextFunction
-): void {
+): Promise<void> {
+  const userRepo = new UserRepository();
+
   const token = req.headers["authorization"];
 
   if (!token) {
@@ -27,9 +30,9 @@ export function checkAuth(
 
     const user = decoded.sub as unknown as User;
 
-    req.user = user;
+    const updatedUser = await userRepo.getById(user.userId);
 
-    authStorage.set().user(user);
+    authStorage.set().user(updatedUser);
 
     next();
   } catch (error) {

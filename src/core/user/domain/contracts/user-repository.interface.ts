@@ -11,4 +11,6 @@ export interface IUserRepository
   extends IRepository<User, GetAllUsersInputParams> {
   getByEmail(email: string): Promise<User>;
   getByDocument(document: string): Promise<User>;
+  getByCode(code: string): Promise<User>;
+  getByDocumentOrEmail(credential: string): Promise<User>;
 }

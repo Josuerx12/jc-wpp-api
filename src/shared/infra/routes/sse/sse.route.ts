@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { instanceEvents } from "../../events/sse-event.emitter";
 
-const sseRouter = Router();
+const sseRouter: Router = Router();
 
 sseRouter.get("/instance/:instanceId/status", (req, res) => {
   const { instanceId } = req.params;

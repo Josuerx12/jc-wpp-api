@@ -5,7 +5,7 @@ import authRouter from "./auth/auth.route";
 import sseRouter from "./sse/sse.route";
 import preRegisterRouter from "./pre-register/pre-register.route";
 
-const router = Router();
+const router: Router = Router();
 
 router.use("/instance", instanceRouter);
 router.use("/users", userRouter);
