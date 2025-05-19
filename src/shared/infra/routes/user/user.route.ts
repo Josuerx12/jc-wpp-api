@@ -30,8 +30,8 @@ userRouter.post("/", async (req, res) => {
   });
 });
 
-userRouter.put("/:userId", async (req, res) => {
-  const id = req.params.userId;
+userRouter.put("/:id", checkAuth, async (req, res) => {
+  const id = req.params.id;
 
   const result = await updateUserUseCase.execute({
     id,

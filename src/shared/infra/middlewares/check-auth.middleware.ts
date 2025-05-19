@@ -32,6 +32,13 @@ export async function checkAuth(
 
     const updatedUser = await userRepo.getById(user.userId);
 
+    if (!updatedUser) {
+      res.status(401).json({ error: "Usuário não encontrado." });
+      return;
+    }
+
+    delete updatedUser.password;
+
     authStorage.set().user(updatedUser);
 
     next();
