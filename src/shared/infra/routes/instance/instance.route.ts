@@ -6,6 +6,7 @@ import { checkAuth } from "../../middlewares/check-auth.middleware";
 import { InstanceListUseCase } from "../../../../core/instances/domain/use-cases/instance-list.use-case";
 import { DeleteInstanceUseCase } from "../../../../core/instances/domain/use-cases/delete-instance.use-case";
 import authStorage from "../auth/auth.storage";
+import { checkSecret } from "../../middlewares/check-secret.middleware";
 
 const instanceRouter: Router = Router();
 
@@ -55,7 +56,7 @@ instanceRouter.delete("/:id", checkAuth, async (req, res) => {
 });
 
 // Enviar mensagem
-instanceRouter.post("/:sessionId/send-text", async (req, res) => {
+instanceRouter.post("/:sessionId/send-text", checkSecret, async (req, res) => {
   const { number, message } = req.body;
 
   if (!number || !message) {
