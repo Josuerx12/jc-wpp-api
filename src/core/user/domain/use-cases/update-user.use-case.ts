@@ -1,3 +1,4 @@
+import { log } from "console";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
@@ -42,6 +43,9 @@ export class UpdateUserUseCase implements UseCase<UpdateUserInput, User> {
     }
 
     await this.repository.update(user);
+
+    delete user.password;
+    delete user.code;
 
     return user;
   }

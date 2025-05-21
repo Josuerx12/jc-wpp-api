@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { PreRegisterRepository } from "../../../../core/auth/infra/repositories/pre-register.repository";
-import { UserRepository } from "../../../../core/user/infra/repositories/user.repository";
 import { LoginUseCase } from "../../../../core/auth/domain/use-cases/login.use-case";
 import { PreRegisterUseCase } from "../../../../core/auth/domain/use-cases/pre-register.use-case";
 import { RequestResetPasswordUseCase } from "../../../../core/user/domain/use-cases/request-reset-password.use-case";
 import { ResetPasswordUseCase } from "../../../../core/user/domain/use-cases/reset-password.use-case";
+import { UserRepository } from "../../../../core/user/infra/repositories/user.repository";
 
 const authRouter: Router = Router();
 

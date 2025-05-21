@@ -1,7 +1,6 @@
 import { v4 } from "uuid";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
-import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
 import { User } from "../../../user/domain/entities/user.entity";
 import { IPreRegisterRepository } from "../contracts/pre-register.interface";
 import { mail } from "../../../mail/infra/transporter";
@@ -9,6 +8,7 @@ import { MailEntity } from "../../../mail/domain/entites/mail.entity";
 import { generateApprovedRegisterEmailHTML } from "../../../mail/domain/templates/approved-register.email";
 import { UserRoles } from "../../../user/infra/models/user.model";
 import { GenerateRandomString } from "../../../../shared/helpers";
+import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
 
 export type ApproveRegisterInput = {
   id: string;

@@ -1,25 +1,40 @@
 import { Request, Router } from "express";
-import { UserRepository } from "../../../../core/user/infra/repositories/user.repository";
+import { UserSecretRepository } from "../../../../core/user/infra/repositories/user-secret.repository";
 import { CreateUserUseCase } from "../../../../core/user/domain/use-cases/create-user.use-case";
 import { UpdateUserUseCase } from "../../../../core/user/domain/use-cases/update-user.use-case";
 import { checkAuth } from "../../middlewares/check-auth.middleware";
-import { GetUserLoggedUseCase } from "../../../../core/user/domain/use-cases/get-user-logged.use-case";
 import { GetAllUsersUseCase } from "../../../../core/user/domain/use-cases/get-all-users.use-case";
 import authStorage from "../auth/auth.storage";
 import { UserInstances } from "../../../../core/user/domain/use-cases/user-instances.use-case";
 import { InstanceRepository } from "../../../../core/instances/infra/repositories/instance.repository";
 import { ChangePasswordUseCase } from "../../../../core/user/domain/use-cases/change-password.use-case";
+import { GetUserSecretOrCreateByUserUseCase } from "../../../../core/user/domain/use-cases/get-secret-or-create-by-user.use-case";
+import { UserRepository } from "../../../../core/user/infra/repositories/user.repository";
+import { RefreshUserSecretUseCase } from "../../../../core/user/domain/use-cases/refresh-user-secret.use-case";
 
 const userRouter: Router = Router();
 
 const userRepo = new UserRepository();
 const instanceRepo = new InstanceRepository();
+const userSecretRepo = new UserSecretRepository();
 
 const createUserUseCase = new CreateUserUseCase(userRepo);
 const updateUserUseCase = new UpdateUserUseCase(userRepo);
 const getAllUsersUseCase = new GetAllUsersUseCase(userRepo);
 const getUserInstancesUseCase = new UserInstances(instanceRepo);
 const changePasswordUseCase = new ChangePasswordUseCase(userRepo);
+const getUserSecretOrCreateByUserUseCase =
+  new GetUserSecretOrCreateByUserUseCase(userSecretRepo);
+const refreshUserSecretUseCase = new RefreshUserSecretUseCase(userSecretRepo);
+
+userRouter.post("/refresh-user-secret", checkAuth, async (req, res) => {
+  const result = await refreshUserSecretUseCase.execute();
+
+  res.json({
+    message: "Chave secreta atualizada com sucesso!",
+    data: result,
+  });
+});
 
 userRouter.post("/", async (req, res) => {
   const result = await createUserUseCase.execute(req.body);
@@ -30,14 +45,20 @@ userRouter.post("/", async (req, res) => {
   });
 });
 
-userRouter.put("/:userId", async (req, res) => {
-  const id = req.params.userId;
+userRouter.put("/:id", checkAuth, async (req, res) => {
+  const id = req.params.id;
 
   const result = await updateUserUseCase.execute({
     id,
     ...req.body,
   });
   res.json({ message: "Usuário editado com sucesso!", result });
+});
+
+userRouter.get("/user-secret", checkAuth, async (req, res) => {
+  const result = await getUserSecretOrCreateByUserUseCase.execute();
+
+  res.json({ data: result });
 });
 
 userRouter.get("/user-logged", checkAuth, async (req: Request, res) => {
