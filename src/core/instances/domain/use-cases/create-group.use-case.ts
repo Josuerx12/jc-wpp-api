@@ -45,8 +45,6 @@ export class CreateGroupUseCase
               input.numbers.map((n) => `${n}@s.whatsapp.net`)
             );
 
-            console.log(res);
-
             groupCreated = true;
 
             console.log("✅ Grupo criado com sucesso!.");
