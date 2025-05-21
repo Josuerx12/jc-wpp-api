@@ -3,16 +3,14 @@ import {
   useMultiFileAuthState,
 } from "@whiskeysockets/baileys";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
-import makeWASocket, { DisconnectReason, proto } from "baileys";
+import makeWASocket, { DisconnectReason } from "baileys";
 import { Boom } from "@hapi/boom";
 import { IInstanceRepository } from "../contracts/instance.interface";
 
-export class SendButtonTextUseCase
-  implements UseCase<SendButtonTextInput, void>
-{
+export class SendGroupTextUseCase implements UseCase<SendGroupTextInput, void> {
   constructor(private readonly repository: IInstanceRepository) {}
 
-  async execute(input: SendButtonTextInput): Promise<void> {
+  async execute(input: SendGroupTextInput): Promise<void> {
     const session = await this.repository.getById(input.sessionId);
 
     if (!session) {
@@ -39,10 +37,10 @@ export class SendButtonTextUseCase
         if (connection === "open" && !messageSent) {
           console.log(`✅ Sessão ${input.sessionId} conectada com sucesso.`);
 
-          const jid = `${input.to}@s.whatsapp.net`;
-          const payload = this.buildInteractiveMessage(input);
+          const gid = input.groupId;
+
           try {
-            await sock.sendMessage(jid, payload as any);
+            await sock.sendMessage(gid, { text: input.message });
             messageSent = true;
 
             console.log("📨 Mensagem enviada com sucesso.");
@@ -78,78 +76,10 @@ export class SendButtonTextUseCase
       sock.ev.on("creds.update", saveCreds);
     });
   }
-
-  private buildInteractiveMessage(input: SendButtonTextInput) {
-    const buttons = input.buttons.map((btn) => {
-      switch (btn.type) {
-        case "reply":
-          return {
-            type: "reply",
-            reply: {
-              id: btn.id,
-              title: btn.title,
-            },
-          };
-        case "url":
-          return {
-            type: "url",
-            url: {
-              displayText: btn.displayText,
-              url: btn.url,
-            },
-          };
-        case "copy":
-          return {
-            type: "copy",
-            copy: {
-              displayText: btn.displayText,
-              text: btn.text,
-            },
-          };
-      }
-    });
-
-    return {
-      viewOnceMessage: {
-        message: {
-          interactiveMessage: {
-            body: { text: input.message },
-            footer: input.footer ? { text: input.footer } : undefined,
-            header: input.header
-              ? { type: "TEXT", text: input.header }
-              : undefined,
-            nativeFlowMessage: {
-              buttons,
-            },
-          },
-        },
-      },
-    };
-  }
 }
 
-export type ButtonOption =
-  | {
-      type: "reply";
-      id: string;
-      title: string;
-    }
-  | {
-      type: "url";
-      displayText: string;
-      url: string;
-    }
-  | {
-      type: "copy";
-      displayText: string;
-      text: string;
-    };
-
-export type SendButtonTextInput = {
+export type SendGroupTextInput = {
   sessionId: string;
   message: string;
-  to: string;
-  buttons: ButtonOption[];
-  header?: string;
-  footer?: string;
+  groupId: string;
 };

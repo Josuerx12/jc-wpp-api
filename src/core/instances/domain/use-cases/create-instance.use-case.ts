@@ -79,9 +79,27 @@ export class CreateInstanceUseCase
               });
             }
 
+            // Obter o jid do usuário conectado
+            const profile = sock.user;
+
+            // Obter informações do perfil
+            const bussinessProfile =
+              profile.id && (await sock.getBusinessProfile(profile.id));
+
+            // Obter URL do avatar (foto de perfil)
+            const avatarUrl =
+              profile.id &&
+              (await sock.profilePictureUrl(profile.id, "preview"));
+
             connected = true;
 
-            resolve({ instanceId, message: "Instancia já conectada!" });
+            resolve({
+              instanceId,
+              message: "Instancia já conectada!",
+              profile,
+              bussinessProfile,
+              avatarUrl,
+            });
             if (connected) {
               setTimeout(() => {
                 sock.end(null);
@@ -133,4 +151,7 @@ export type ConnectionWppOutput = {
   instanceId: string;
   message: string;
   qrCode?: string;
+  profile?: any;
+  bussinessProfile?: any;
+  avatarUrl?: string;
 };

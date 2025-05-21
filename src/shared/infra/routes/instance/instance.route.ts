@@ -6,9 +6,9 @@ import { checkAuth } from "../../middlewares/check-auth.middleware";
 import { InstanceListUseCase } from "../../../../core/instances/domain/use-cases/instance-list.use-case";
 import { DeleteInstanceUseCase } from "../../../../core/instances/domain/use-cases/delete-instance.use-case";
 import authStorage from "../auth/auth.storage";
-import { SendButtonTextUseCase } from "../../../../core/instances/domain/use-cases/send-button-text.use-case";
-import { AppError } from "../../middlewares/error.middleware";
 import { checkSecret } from "../../middlewares/check-secret.middleware";
+import { CreateGroupUseCase } from "../../../../core/instances/domain/use-cases/create-group.use-case";
+import { SendGroupTextUseCase } from "../../../../core/instances/domain/use-cases/send-group-text.use-case";
 
 const instanceRouter: Router = Router();
 
@@ -18,7 +18,8 @@ const createConnectionUseCase = new CreateInstanceUseCase(sessionRepo);
 const instanceListUseCase = new InstanceListUseCase(sessionRepo);
 const deleteInstanceUseCase = new DeleteInstanceUseCase(sessionRepo);
 const sendTextUseCase = new SendTextUseCase(sessionRepo);
-const sendButtonTextUseCase = new SendButtonTextUseCase(sessionRepo);
+const sendGroupTextUseCase = new SendGroupTextUseCase(sessionRepo);
+const createGroupUseCase = new CreateGroupUseCase(sessionRepo);
 
 // Criar conexão com wpp.
 instanceRouter.post("/create", checkAuth, async (req: Request, res) => {
@@ -26,17 +27,19 @@ instanceRouter.post("/create", checkAuth, async (req: Request, res) => {
 
   const user = authStorage.get().user();
 
-  const { qrCode, instanceId, message } = await createConnectionUseCase.execute(
-    {
+  const { qrCode, instanceId, message, bussinessProfile, avatarUrl, profile } =
+    await createConnectionUseCase.execute({
       instanceId: instance,
       userId: user.userId,
-    }
-  );
+    });
 
   res.json({
     message,
     instanceId,
     qrCode,
+    profile,
+    bussinessProfile,
+    avatarUrl,
   });
 });
 
@@ -74,32 +77,46 @@ instanceRouter.post("/:sessionId/send-text", checkSecret, async (req, res) => {
   res.json(result);
 });
 
-// Enviar button
-instanceRouter.post("/:sessionId/send-button", async (req, res) => {
-  const { number, message, buttons, header, footer } = req.body;
+//Criar grupo
+instanceRouter.post(
+  "/:sessionId/create-group",
+  checkSecret,
+  async (req, res) => {
+    const { subject, numbers } = req.body;
 
-  if (
-    !number ||
-    !message ||
-    !buttons ||
-    buttons.length === 0 ||
-    !header ||
-    !footer
-  ) {
-    throw new AppError(
-      "Número, mensagem, botões, cabeçalho e rodapé são obrigatórios"
-    );
+    if (!subject || !numbers) {
+      res.status(400).json({ error: "Números e assunto são obrigatórios" });
+    }
+
+    const result = await createGroupUseCase.execute({
+      numbers,
+      subject,
+      sessionId: req.params.sessionId,
+    });
+    res.json(result);
   }
+);
 
-  const result = await sendButtonTextUseCase.execute({
-    message,
-    to: number,
-    buttons,
-    footer,
-    header,
-    sessionId: req.params.sessionId,
-  });
-  res.json(result);
-});
+// Enviar mensagem em grupo
+instanceRouter.post(
+  "/:sessionId/send-group-text",
+  checkSecret,
+  async (req, res) => {
+    const { groupId, message } = req.body;
+
+    if (!groupId || !message) {
+      res
+        .status(400)
+        .json({ error: "Id do grupo e mensagem são obrigatórios" });
+    }
+
+    const result = await sendGroupTextUseCase.execute({
+      message,
+      groupId,
+      sessionId: req.params.sessionId,
+    });
+    res.json(result);
+  }
+);
 
 export default instanceRouter;
