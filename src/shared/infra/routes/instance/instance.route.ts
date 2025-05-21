@@ -6,6 +6,8 @@ import { checkAuth } from "../../middlewares/check-auth.middleware";
 import { InstanceListUseCase } from "../../../../core/instances/domain/use-cases/instance-list.use-case";
 import { DeleteInstanceUseCase } from "../../../../core/instances/domain/use-cases/delete-instance.use-case";
 import authStorage from "../auth/auth.storage";
+import { SendButtonTextUseCase } from "../../../../core/instances/domain/use-cases/send-button-text.use-case";
+import { AppError } from "../../middlewares/error.middleware";
 
 const instanceRouter: Router = Router();
 
@@ -15,6 +17,7 @@ const createConnectionUseCase = new CreateInstanceUseCase(sessionRepo);
 const instanceListUseCase = new InstanceListUseCase(sessionRepo);
 const deleteInstanceUseCase = new DeleteInstanceUseCase(sessionRepo);
 const sendTextUseCase = new SendTextUseCase(sessionRepo);
+const sendButtonTextUseCase = new SendButtonTextUseCase(sessionRepo);
 
 // Criar conexão com wpp.
 instanceRouter.post("/create", checkAuth, async (req: Request, res) => {
@@ -65,6 +68,34 @@ instanceRouter.post("/:sessionId/send-text", async (req, res) => {
   const result = await sendTextUseCase.execute({
     message,
     to: number,
+    sessionId: req.params.sessionId,
+  });
+  res.json(result);
+});
+
+// Enviar button
+instanceRouter.post("/:sessionId/send-button", async (req, res) => {
+  const { number, message, buttons, header, footer } = req.body;
+
+  if (
+    !number ||
+    !message ||
+    !buttons ||
+    buttons.length === 0 ||
+    !header ||
+    !footer
+  ) {
+    throw new AppError(
+      "Número, mensagem, botões, cabeçalho e rodapé são obrigatórios"
+    );
+  }
+
+  const result = await sendButtonTextUseCase.execute({
+    message,
+    to: number,
+    buttons,
+    footer,
+    header,
     sessionId: req.params.sessionId,
   });
   res.json(result);
