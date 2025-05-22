@@ -11,6 +11,8 @@ import { ChangePasswordUseCase } from "../../../../core/user/domain/use-cases/ch
 import { GetUserSecretOrCreateByUserUseCase } from "../../../../core/user/domain/use-cases/get-secret-or-create-by-user.use-case";
 import { UserRepository } from "../../../../core/user/infra/repositories/user.repository";
 import { RefreshUserSecretUseCase } from "../../../../core/user/domain/use-cases/refresh-user-secret.use-case";
+import { DeleteInstanceUseCase } from "../../../../core/instances/domain/use-cases/delete-instance.use-case";
+import { DeleteUserUseCase } from "../../../../core/user/domain/use-cases/delete-user.use-case";
 
 const userRouter: Router = Router();
 
@@ -26,6 +28,12 @@ const changePasswordUseCase = new ChangePasswordUseCase(userRepo);
 const getUserSecretOrCreateByUserUseCase =
   new GetUserSecretOrCreateByUserUseCase(userSecretRepo);
 const refreshUserSecretUseCase = new RefreshUserSecretUseCase(userSecretRepo);
+const deleteInstanceUseCase = new DeleteInstanceUseCase(instanceRepo);
+const deleteUserUseCase = new DeleteUserUseCase(
+  userRepo,
+  instanceRepo,
+  deleteInstanceUseCase
+);
 
 userRouter.post("/refresh-user-secret", checkAuth, async (req, res) => {
   const result = await refreshUserSecretUseCase.execute();
@@ -91,6 +99,16 @@ userRouter.get("/", checkAuth, async (req, res) => {
 
 userRouter.post("/change-password", checkAuth, async (req, res) => {
   await changePasswordUseCase.execute(req.body);
+
+  res.status(204).end();
+});
+
+userRouter.delete("/:id", checkAuth, async (req, res) => {
+  const id = req.params.id;
+
+  await deleteUserUseCase.execute({
+    id,
+  });
 
   res.status(204).end();
 });
