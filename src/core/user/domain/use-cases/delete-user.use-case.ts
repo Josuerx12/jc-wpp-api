@@ -2,6 +2,9 @@ import { UseCase } from "../../../../shared/domain/contracts/use-case.interface"
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
 import { IInstanceRepository } from "../../../instances/domain/contracts/instance.interface";
 import { DeleteInstanceUseCase } from "../../../instances/domain/use-cases/delete-instance.use-case";
+import { MailEntity } from "../../../mail/domain/entites/mail.entity";
+import { generateDeletedAccountEmailHTML } from "../../../mail/domain/templates/deleted-account.email";
+import { mail } from "../../../mail/infra/transporter";
 import { IUserRepository } from "../contracts/user-repository.interface";
 
 export interface DeleteUserInput {
@@ -39,5 +42,13 @@ export class DeleteUserUseCase implements UseCase<DeleteUserInput, void> {
     await Promise.all(promises);
 
     await this.repository.delete(user.userId);
+
+    mail.sendMail(
+      new MailEntity({
+        to: user.email,
+        subject: "Sua conta JCWPPAPI foi deletada!",
+        html: generateDeletedAccountEmailHTML(user.name),
+      })
+    );
   }
 }
