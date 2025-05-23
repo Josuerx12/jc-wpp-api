@@ -37,8 +37,6 @@ export async function checkAuth(
       return;
     }
 
-    delete updatedUser.password;
-
     authStorage.set().user(updatedUser);
 
     next();
