@@ -9,6 +9,7 @@ import authStorage from "../auth/auth.storage";
 import { checkSecret } from "../../middlewares/check-secret.middleware";
 import { CreateGroupUseCase } from "../../../../core/instances/domain/use-cases/create-group.use-case";
 import { SendGroupTextUseCase } from "../../../../core/instances/domain/use-cases/send-group-text.use-case";
+import { SendButtonTextUseCase } from "../../../../core/instances/domain/use-cases/send-button-text.use-case";
 
 const instanceRouter: Router = Router();
 
@@ -18,6 +19,7 @@ const createConnectionUseCase = new CreateInstanceUseCase(sessionRepo);
 const instanceListUseCase = new InstanceListUseCase(sessionRepo);
 const deleteInstanceUseCase = new DeleteInstanceUseCase(sessionRepo);
 const sendTextUseCase = new SendTextUseCase(sessionRepo);
+const sendButtonTextUseCase = new SendButtonTextUseCase(sessionRepo);
 const sendGroupTextUseCase = new SendGroupTextUseCase(sessionRepo);
 const createGroupUseCase = new CreateGroupUseCase(sessionRepo);
 
@@ -76,6 +78,33 @@ instanceRouter.post("/:sessionId/send-text", checkSecret, async (req, res) => {
   });
   res.json(result);
 });
+
+// Enviar mensagem com botão de copiar
+instanceRouter.post(
+  "/:sessionId/send-btn-text",
+  checkSecret,
+  async (req, res) => {
+    const { number, message, buttonContent, buttonText } = req.body;
+
+    if (!number || !message || !buttonContent || !buttonText) {
+      res
+        .status(400)
+        .json({
+          error:
+            "Número, mensagem, conteudo do botão e texto do botão são obrigatórios",
+        });
+    }
+
+    const result = await sendButtonTextUseCase.execute({
+      message,
+      to: number,
+      buttonContent,
+      buttonText,
+      sessionId: req.params.sessionId,
+    });
+    res.json(result);
+  }
+);
 
 //Criar grupo
 instanceRouter.post(
