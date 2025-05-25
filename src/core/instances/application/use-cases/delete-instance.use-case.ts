@@ -8,7 +8,7 @@ import makeWASocket, {
 } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
-import { UserRoles } from "../../../user/infra/models/user.model";
+import { UserRoles } from "../../../user/infra/models/user.model.mapper";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 
 export class DeleteInstanceUseCase

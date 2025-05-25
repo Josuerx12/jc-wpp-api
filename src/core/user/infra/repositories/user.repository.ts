@@ -1,63 +1,92 @@
-import { IUserRepository } from "../../domain/contracts/user-repository.interface";
-import { User } from "../../domain/entities/user.entity";
-import { IUser, UserModel } from "../models/user.model";
+import { Prisma } from "../../../../generated/prisma";
+import { prisma } from "../../../../shared/infra/config/prisma";
+import {
+  IUserRepository,
+  UserInputParams,
+  UserOutputParams,
+} from "../../domain/contracts/user-repository.interface";
+import { UserEntity } from "../../domain/entities/user.entity";
+import { UserModelMapper } from "../models/user.model.mapper";
 
 export class UserRepository implements IUserRepository {
-  private model = UserModel;
+  async getAll(props: UserInputParams): Promise<UserOutputParams> {
+    const where: Prisma.UserWhereInput = {
+      name: { contains: props.filter || "", mode: "insensitive" },
+      document: { contains: props.filter || "", mode: "insensitive" },
+      email: { contains: props.filter || "", mode: "insensitive" },
+      phone: { contains: props.filter || "", mode: "insensitive" },
+    };
 
-  async getById(id: string): Promise<User> {
-    const user = await this.model.findOne({ userId: id });
+    const totalItems = await prisma.user.count({ where });
+    const totalPages = Math.ceil(totalItems / props.perPage);
 
-    return user ? new User(user as any) : null;
-  }
-
-  async getByCode(code: string): Promise<User> {
-    const user = await this.model.findOne({ code });
-
-    return user ? new User(user as any) : null;
-  }
-
-  async getByDocumentOrEmail(credential: string): Promise<User> {
-    const user = await this.model.findOne({
-      $or: [{ email: credential }, { document: credential }],
+    const data = await prisma.user.findMany({
+      where,
+      take: props.perPage,
+      skip: (props.page - 1) * props.perPage,
     });
 
-    return user ? new User(user as any) : null;
+    return {
+      data: data.map((d) => UserModelMapper.toEntity(d as any)),
+      page: props.page,
+      perPage: props.perPage,
+      totalItems,
+      totalPages,
+    };
+  }
+  async getById(id: string): Promise<UserEntity> {
+    const model = await prisma.user.findUnique({ where: { id } });
+
+    return model ? UserModelMapper.toEntity(model as any) : null;
   }
 
-  async getByEmail(email: string): Promise<User> {
-    const user = await this.model.findOne({ email });
+  async getByCode(code: string): Promise<UserEntity> {
+    const model = await prisma.user.findUnique({ where: { code } });
 
-    return user ? new User(user as any) : null;
+    return model ? UserModelMapper.toEntity(model as any) : null;
   }
 
-  async getByDocument(document: string): Promise<User> {
-    const user = await this.model.findOne({ document });
-
-    return user ? new User(user as any) : null;
-  }
-
-  async getAll(): Promise<User[]> {
-    const users = await this.model.find().lean();
-
-    const entities = users.map((u) => {
-      delete u.password;
-
-      return new User(u as any);
+  async getByDocumentOrEmail(credential: string): Promise<UserEntity> {
+    const model = await prisma.user.findFirst({
+      where: {
+        OR: [
+          {
+            email: credential,
+          },
+          {
+            document: credential,
+          },
+        ],
+      },
     });
 
-    return entities;
+    return model ? UserModelMapper.toEntity(model as any) : null;
   }
 
-  async create(entity: User): Promise<void | User> {
-    await this.model.create(entity);
+  async getByEmail(email: string): Promise<UserEntity> {
+    const model = await prisma.user.findUnique({ where: { email } });
+
+    return model ? UserModelMapper.toEntity(model as any) : null;
   }
 
-  async update(entity: User): Promise<void | User> {
-    await this.model.updateOne({ userId: entity.userId }, entity);
+  async getByDocument(document: string): Promise<UserEntity> {
+    const model = await prisma.user.findUnique({ where: { document } });
+
+    return model ? UserModelMapper.toEntity(model as any) : null;
   }
 
-  async delete(id: string): Promise<void | User> {
-    await this.model.deleteOne({ userId: id });
+  async create(entity: UserEntity): Promise<void | UserEntity> {
+    await prisma.user.create({ data: UserModelMapper.toModel(entity) });
+  }
+
+  async update(entity: UserEntity): Promise<void | UserEntity> {
+    await prisma.user.update({
+      where: { id: entity.id },
+      data: UserModelMapper.toModel(entity),
+    });
+  }
+
+  async delete(id: string): Promise<void | UserEntity> {
+    await prisma.user.delete({ where: { id } });
   }
 }

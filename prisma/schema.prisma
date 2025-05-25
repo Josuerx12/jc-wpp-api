@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum DocumentTypeEnum {
+  CPF
+  CNPJ
+}
+
+enum RoleEnum {
+  ADMIN
+  SUPER
+  USER
+}
+
+model User {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  document     String           @unique
+  documentType DocumentTypeEnum
+  email        String           @unique
+  phone        String
+  password     String
+  code         String?          @unique
+  role         RoleEnum         @default(USER)
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  UserSecret UserSecret[]
+  Instance   Instance[]
+
+  @@map("users")
+}
+
+model UserSecret {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
+  secret String
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_secrets")
+}
+
+model PreRegister {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  documentType DocumentTypeEnum
+  document     String           @unique
+  email        String           @unique
+  name         String
+  phone        String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("pre_registers")
+}
+
+model Instance {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @db.ObjectId
+  authPath String
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("instances")
+}

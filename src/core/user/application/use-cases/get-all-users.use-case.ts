@@ -5,7 +5,7 @@ import {
   IUserRepository,
 } from "../../domain/contracts/user-repository.interface";
 import { User } from "../../domain/entities/user.entity";
-import { UserRoles } from "../../infra/models/user.model";
+import { UserRoles } from "../../infra/models/user.model.mapper";
 
 export type GetAllUsersInput = {
   user: User;

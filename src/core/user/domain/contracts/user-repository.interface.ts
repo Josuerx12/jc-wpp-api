@@ -1,16 +1,18 @@
+import { InputParams } from "../../../../shared/domain/contracts/input-params";
+import { OutputParams } from "../../../../shared/domain/contracts/output-params.interface";
 import { IRepository } from "../../../../shared/domain/contracts/repository.interface";
-import { User } from "../entities/user.entity";
+import { UserEntity } from "../entities/user.entity";
 
-export type GetAllUsersInputParams = {
-  perPage?: string;
-  page?: string;
-  filter?: string;
-};
+export type UserFilters = string;
+
+export class UserInputParams extends InputParams<UserFilters> {}
+
+export interface UserOutputParams extends OutputParams<UserEntity> {}
 
 export interface IUserRepository
-  extends IRepository<User, GetAllUsersInputParams> {
-  getByEmail(email: string): Promise<User>;
-  getByDocument(document: string): Promise<User>;
-  getByCode(code: string): Promise<User>;
-  getByDocumentOrEmail(credential: string): Promise<User>;
+  extends IRepository<UserEntity, UserInputParams, UserOutputParams> {
+  getByEmail(email: string): Promise<UserEntity>;
+  getByDocument(document: string): Promise<UserEntity>;
+  getByCode(code: string): Promise<UserEntity>;
+  getByDocumentOrEmail(credential: string): Promise<UserEntity>;
 }

@@ -3,7 +3,7 @@ import {
   IUserSecretRepository,
 } from "../../domain/contracts/user-secret-repository.interface";
 import { UserSecret } from "../../domain/entities/user-secret.entity";
-import { UserSecretModel } from "../models/user-secret.model";
+import { UserSecretModel } from "../models/user-secret.model.mapper";
 
 export class UserSecretRepository implements IUserSecretRepository {
   private model = UserSecretModel;

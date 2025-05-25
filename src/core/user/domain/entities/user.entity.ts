@@ -1,28 +1,51 @@
 import { compare, compareSync, genSaltSync, hashSync } from "bcryptjs";
-import { IUser, UserRoles } from "../../infra/models/user.model";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
+import { DocumentTypeEnum, RoleEnum } from "../../../../generated/prisma";
+import { InstanceEntity } from "../../../instances/domain/entities/instance.entity";
+import { UserSecretEntity } from "./user-secret.entity";
 
-export class User {
-  userId: string;
+export type UserEntityProps = {
+  id?: string;
   name: string;
+  email: string;
+  document: string;
+  documentType: DocumentTypeEnum;
+  phone: string;
+  password: string;
+  code?: string;
+  role?: RoleEnum;
+  instances?: InstanceEntity[];
+  secret?: UserSecretEntity;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export class UserEntity {
+  id: string;
+  name: string;
+  documentType: DocumentTypeEnum;
   document: string;
   email: string;
   password: string;
-  isTempPass: boolean;
-  role: UserRoles;
+  phone: string;
+  role: RoleEnum;
   code: string;
+  instances?: InstanceEntity[];
+  secret?: UserSecretEntity;
   createdAt: Date;
   updatedAt: Date;
 
-  constructor(props: Partial<IUser> & { createdAt?: Date; updatedAt?: Date }) {
-    this.userId = props.userId;
+  constructor(props: UserEntityProps) {
+    this.id = props.id;
     this.name = props.name;
     this.document = props.document;
     this.email = props.email;
     this.password = this.setPassword(props.password);
-    this.isTempPass = props.isTempPass;
-    this.role = props.role ? props.role : UserRoles.USER;
+    this.role = props.role ? props.role : RoleEnum.USER;
     this.code = props.code;
+    this.phone = props.phone;
+    this.instances = props.instances;
+    this.secret = props.secret;
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();
   }
@@ -72,19 +95,15 @@ export class User {
   }
 
   isSuper() {
-    return this.role === UserRoles.SUPER;
+    return this.role === RoleEnum.SUPER;
   }
 
   isAdmin() {
-    return this.role === UserRoles.ADMIN;
+    return this.role === RoleEnum.ADMIN;
   }
 
   isUser() {
-    return this.role === UserRoles.USER;
-  }
-
-  isTempPassword() {
-    return this.isTempPass;
+    return this.role === RoleEnum.USER;
   }
 
   verifyPassword(password: string) {

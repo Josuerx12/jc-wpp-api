@@ -1,16 +1,22 @@
-import { IUserSecret } from "../../infra/models/user-secret.model";
+import { IUserSecret } from "../../infra/models/user-secret.model.mapper";
 
-export class UserSecret {
-  userSecretId: string;
+export type UserSecretEntityProps = {
+  id?: string;
+  userId: string;
+  secret: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export class UserSecretEntity {
+  id?: string;
   userId: string;
   secret: string;
   createdAt: Date;
   updatedAt: Date;
 
-  constructor(
-    props: Partial<IUserSecret> & { createdAt?: Date; updatedAt?: Date }
-  ) {
-    this.userSecretId = props.userSecretId || crypto.randomUUID();
+  constructor(props: UserSecretEntityProps) {
+    this.id = props.id;
     this.userId = props.userId;
     this.secret = props.secret;
     this.createdAt = props.createdAt || new Date();

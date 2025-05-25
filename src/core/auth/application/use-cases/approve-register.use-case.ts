@@ -5,7 +5,7 @@ import { User } from "../../../user/domain/entities/user.entity";
 import { mail } from "../../../mail/infra/transporter";
 import { MailEntity } from "../../../mail/domain/entites/mail.entity";
 import { generateApprovedRegisterEmailHTML } from "../../../mail/domain/templates/approved-register.email";
-import { UserRoles } from "../../../user/infra/models/user.model";
+import { UserRoles } from "../../../user/infra/models/user.model.mapper";
 import { GenerateRandomString } from "../../../../shared/helpers";
 import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
 import { IPreRegisterRepository } from "../../domain/contracts/pre-register.interface";
