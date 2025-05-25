@@ -5,8 +5,8 @@ import { UserRoles } from "../../../user/infra/models/user.model";
 import {
   GetAllPreRegisterInputParams,
   IPreRegisterRepository,
-} from "../contracts/pre-register.interface";
-import { PreRegisterEntity } from "../entities/pre-register.entity";
+} from "../../domain/contracts/pre-register.interface";
+import { PreRegisterEntity } from "../../domain/entities/pre-register.entity";
 
 export type GetAllPreRegistersInput = {
   user: User;

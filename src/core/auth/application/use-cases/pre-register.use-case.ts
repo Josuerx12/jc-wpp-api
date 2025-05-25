@@ -6,8 +6,8 @@ import { mail } from "../../../mail/infra/transporter";
 import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
 import { DocumentVO } from "../../../user/domain/vo/document.vo";
 import { EmailVO } from "../../../user/domain/vo/email.vo";
-import { IPreRegisterRepository } from "../contracts/pre-register.interface";
-import { PreRegisterEntity } from "../entities/pre-register.entity";
+import { IPreRegisterRepository } from "../../domain/contracts/pre-register.interface";
+import { PreRegisterEntity } from "../../domain/entities/pre-register.entity";
 
 export class PreRegisterUseCase
   implements UseCase<PreRegisterInput, PreRegisterOutput>

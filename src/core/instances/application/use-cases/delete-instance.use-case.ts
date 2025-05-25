@@ -1,6 +1,6 @@
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import fs from "fs";
-import { IInstanceRepository } from "../contracts/instance.interface";
+import { IInstanceRepository } from "../../domain/contracts/instance.interface";
 import makeWASocket, {
   DisconnectReason,
   fetchLatestBaileysVersion,

@@ -3,7 +3,6 @@ import { AppError } from "../../../../shared/infra/middlewares/error.middleware"
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
 import { IInstanceRepository } from "../../../instances/domain/contracts/instance.interface";
 import { InstanceEntity } from "../../../instances/domain/entities/instance.entity";
-import { UserRoles } from "../../infra/models/user.model";
 
 export class UserInstances
   implements UseCase<UserInstancesInput, UserInstacesOutput>
@@ -26,7 +25,7 @@ export class UserInstances
 }
 
 export type UserInstancesInput = {
-  userId: string;
+  userId?: string;
 };
 
 export type UserInstacesOutput = {

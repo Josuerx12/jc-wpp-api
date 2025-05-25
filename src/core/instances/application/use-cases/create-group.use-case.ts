@@ -5,12 +5,14 @@ import {
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import makeWASocket, { DisconnectReason } from "baileys";
 import { Boom } from "@hapi/boom";
-import { IInstanceRepository } from "../contracts/instance.interface";
+import { IInstanceRepository } from "../../domain/contracts/instance.interface";
 
-export class SendTextUseCase implements UseCase<SendTextInput, void> {
+export class CreateGroupUseCase
+  implements UseCase<CreateGroupInput, { groupId?: string }>
+{
   constructor(private readonly repository: IInstanceRepository) {}
 
-  async execute(input: SendTextInput): Promise<void> {
+  async execute(input: CreateGroupInput): Promise<{ groupId?: string }> {
     const session = await this.repository.getById(input.sessionId);
 
     if (!session) {
@@ -22,40 +24,44 @@ export class SendTextUseCase implements UseCase<SendTextInput, void> {
     const { state, saveCreds } = await useMultiFileAuthState(authPath);
     const { version } = await fetchLatestBaileysVersion();
 
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<{ groupId?: string }>((resolve, reject) => {
       const sock = makeWASocket({
         version,
         auth: state,
         printQRInTerminal: false,
       });
 
-      let messageSent = false;
+      let groupCreated = false;
 
       sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect } = update;
 
-        if (connection === "open" && !messageSent) {
+        if (connection === "open" && !groupCreated) {
           console.log(`✅ Sessão ${input.sessionId} conectada com sucesso.`);
 
-          const jid = `${input.to}@s.whatsapp.net`;
           try {
-            await sock.sendMessage(jid, { text: input.message });
-            messageSent = true;
+            const res = await sock.groupCreate(
+              input.subject,
+              input.numbers.map((n) => `${n}@s.whatsapp.net`)
+            );
 
-            console.log("📨 Mensagem enviada com sucesso.");
+            groupCreated = true;
+
+            console.log("✅ Grupo criado com sucesso!.");
 
             setTimeout(() => {
               sock.end(null);
-              resolve();
+              resolve({});
             }, 3000);
-            resolve();
+
+            resolve({ groupId: res.id });
           } catch (err) {
             sock.end(null);
             reject(new Error(`Erro ao enviar mensagem: ${err}`));
           }
         }
 
-        if (connection === "close" && !messageSent) {
+        if (connection === "close" && !groupCreated) {
           const statusCode = (lastDisconnect?.error as Boom)?.output
             ?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
@@ -77,8 +83,8 @@ export class SendTextUseCase implements UseCase<SendTextInput, void> {
   }
 }
 
-export type SendTextInput = {
+export type CreateGroupInput = {
   sessionId: string;
-  message: string;
-  to: string;
+  subject: string;
+  numbers: string[];
 };

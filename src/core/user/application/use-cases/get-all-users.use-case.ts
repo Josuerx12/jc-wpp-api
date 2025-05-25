@@ -1,11 +1,11 @@
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
-import { UserRoles } from "../../infra/models/user.model";
 import {
   GetAllUsersInputParams,
   IUserRepository,
-} from "../contracts/user-repository.interface";
-import { User } from "../entities/user.entity";
+} from "../../domain/contracts/user-repository.interface";
+import { User } from "../../domain/entities/user.entity";
+import { UserRoles } from "../../infra/models/user.model";
 
 export type GetAllUsersInput = {
   user: User;

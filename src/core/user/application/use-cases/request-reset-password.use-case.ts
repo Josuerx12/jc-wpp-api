@@ -3,7 +3,7 @@ import { AppError } from "../../../../shared/infra/middlewares/error.middleware"
 import { MailEntity } from "../../../mail/domain/entites/mail.entity";
 import { generateResetPasswordEmailHTML } from "../../../mail/domain/templates/request-reset-password.email";
 import { mail } from "../../../mail/infra/transporter";
-import { IUserRepository } from "../contracts/user-repository.interface";
+import { IUserRepository } from "../../domain/contracts/user-repository.interface";
 
 export class RequestResetPasswordUseCase
   implements UseCase<RequestResetPasswordInput, void>
@@ -41,7 +41,7 @@ export class RequestResetPasswordUseCase
       html: generateResetPasswordEmailHTML(
         user.name,
         user.code,
-        "https://jcwpp.jcdev.com.br/reset-password?code=" + user.code
+        "https://jcwpp.jcdev.com.br/auth/reset-password?code=" + user.code
       ),
     });
 

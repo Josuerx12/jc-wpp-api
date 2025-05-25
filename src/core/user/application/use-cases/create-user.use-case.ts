@@ -1,14 +1,22 @@
 import { v4 } from "uuid";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
-import { IUserRepository } from "../contracts/user-repository.interface";
-import { User } from "../entities/user.entity";
-import { EmailVO } from "../vo/email.vo";
-import { DocumentVO } from "../vo/document.vo";
+import { IUserRepository } from "../../domain/contracts/user-repository.interface";
+import { User } from "../../domain/entities/user.entity";
+import { DocumentVO } from "../../domain/vo/document.vo";
+import { EmailVO } from "../../domain/vo/email.vo";
+import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
+import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 
 export class CreateUserUseCase implements UseCase<CreateUserInput, User> {
   constructor(private readonly repository: IUserRepository) {}
 
   async execute(input: CreateUserInput): Promise<User> {
+    const loggedUser = authStorage.get().user();
+
+    if (!loggedUser.isAdmin() && !loggedUser.isSuper()) {
+      throw new AppError("Você não tem permissão para acessar está rota.");
+    }
+
     const email = EmailVO.create(input.email);
     const document = DocumentVO.create(input.document.replace(/\D/g, ""));
 

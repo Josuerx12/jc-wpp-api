@@ -1,7 +1,7 @@
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
-import { IUserSecretRepository } from "../contracts/user-secret-repository.interface";
-import { UserSecret } from "../entities/user-secret.entity";
+import { IUserSecretRepository } from "../../domain/contracts/user-secret-repository.interface";
+import { UserSecret } from "../../domain/entities/user-secret.entity";
 
 export class GetUserSecretOrCreateByUserUseCase
   implements UseCase<null, UserSecret>

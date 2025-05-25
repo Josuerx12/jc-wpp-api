@@ -1,7 +1,7 @@
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
-import { IInstanceRepository } from "../contracts/instance.interface";
+import { IInstanceRepository } from "../../domain/contracts/instance.interface";
 import { User } from "../../../user/domain/entities/user.entity";
-import { InstanceEntity } from "../entities/instance.entity";
+import { InstanceEntity } from "../../domain/entities/instance.entity";
 
 export class InstanceListUseCase
   implements UseCase<InstanceListInput, InstanceListOutput>

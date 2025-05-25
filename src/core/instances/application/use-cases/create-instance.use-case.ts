@@ -8,17 +8,20 @@ import {
 } from "@whiskeysockets/baileys";
 import makeWASocket, { DisconnectReason } from "baileys";
 import { Boom } from "@hapi/boom";
-import { IInstanceRepository } from "../contracts/instance.interface";
 import { instanceEvents } from "../../../../shared/infra/events/sse-event.emitter";
+import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
+import { IInstanceRepository } from "../../domain/contracts/instance.interface";
 
-export class CreateInstanceUseCase
-  implements UseCase<CreateConnectionWppInput, ConnectionWppOutput>
+export class ConnectInstanceUseCase
+  implements UseCase<ConnectConnectionWppInput, ConnectionWppOutput>
 {
   constructor(private readonly repository: IInstanceRepository) {}
 
-  async execute(input: CreateConnectionWppInput): Promise<ConnectionWppOutput> {
+  async execute(
+    input: ConnectConnectionWppInput
+  ): Promise<ConnectionWppOutput> {
     const instanceId = input.instanceId ?? v4();
-    const { userId } = input;
+    const { userId } = authStorage.get().user();
 
     const instance = await this.repository.getById(instanceId);
 
@@ -130,7 +133,7 @@ export class CreateInstanceUseCase
               console.error("Erro ao remover authPath:", err);
             }
 
-            this.execute({ userId, instanceId }).then(resolve).catch(reject);
+            this.execute({ instanceId }).then(resolve).catch(reject);
 
             resolved = true;
           }
@@ -142,8 +145,7 @@ export class CreateInstanceUseCase
   }
 }
 
-export type CreateConnectionWppInput = {
-  userId: string;
+export type ConnectConnectionWppInput = {
   instanceId?: string;
 };
 

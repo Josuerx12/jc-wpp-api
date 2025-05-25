@@ -5,14 +5,14 @@ import {
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import makeWASocket, { DisconnectReason } from "baileys";
 import { Boom } from "@hapi/boom";
-import { IInstanceRepository } from "../contracts/instance.interface";
+import { IInstanceRepository } from "../../domain/contracts/instance.interface";
 
-export class CreateGroupUseCase
-  implements UseCase<CreateGroupInput, { groupId?: string }>
+export class SendButtonTextUseCase
+  implements UseCase<SendButtonTextInput, void>
 {
   constructor(private readonly repository: IInstanceRepository) {}
 
-  async execute(input: CreateGroupInput): Promise<{ groupId?: string }> {
+  async execute(input: SendButtonTextInput): Promise<void> {
     const session = await this.repository.getById(input.sessionId);
 
     if (!session) {
@@ -24,44 +24,61 @@ export class CreateGroupUseCase
     const { state, saveCreds } = await useMultiFileAuthState(authPath);
     const { version } = await fetchLatestBaileysVersion();
 
-    return new Promise<{ groupId?: string }>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const sock = makeWASocket({
         version,
         auth: state,
         printQRInTerminal: false,
       });
 
-      let groupCreated = false;
+      let messageSent = false;
 
       sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect } = update;
 
-        if (connection === "open" && !groupCreated) {
+        if (connection === "open" && !messageSent) {
           console.log(`✅ Sessão ${input.sessionId} conectada com sucesso.`);
 
+          const jid = `${input.to}@s.whatsapp.net`;
           try {
-            const res = await sock.groupCreate(
-              input.subject,
-              input.numbers.map((n) => `${n}@s.whatsapp.net`)
+            await sock.relayMessage(
+              jid,
+              {
+                messageContextInfo: {
+                  deviceListMetadata: {},
+                  deviceListMetadataVersion: 2,
+                },
+                interactiveMessage: {
+                  body: {
+                    text: input.message,
+                  },
+                  nativeFlowMessage: {
+                    buttons: [
+                      {
+                        name: "send_location",
+                      },
+                    ],
+                  },
+                },
+              },
+              {}
             );
+            messageSent = true;
 
-            groupCreated = true;
-
-            console.log("✅ Grupo criado com sucesso!.");
+            console.log("📨 Mensagem enviada com sucesso.");
 
             setTimeout(() => {
               sock.end(null);
-              resolve({});
+              resolve();
             }, 3000);
-
-            resolve({ groupId: res.id });
+            resolve();
           } catch (err) {
             sock.end(null);
             reject(new Error(`Erro ao enviar mensagem: ${err}`));
           }
         }
 
-        if (connection === "close" && !groupCreated) {
+        if (connection === "close" && !messageSent) {
           const statusCode = (lastDisconnect?.error as Boom)?.output
             ?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
@@ -83,8 +100,10 @@ export class CreateGroupUseCase
   }
 }
 
-export type CreateGroupInput = {
+export type SendButtonTextInput = {
   sessionId: string;
-  subject: string;
-  numbers: string[];
+  message: string;
+  buttonText: string;
+  buttonContent: string;
+  to: string;
 };

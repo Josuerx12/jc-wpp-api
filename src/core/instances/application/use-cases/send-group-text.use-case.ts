@@ -5,7 +5,7 @@ import {
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import makeWASocket, { DisconnectReason } from "baileys";
 import { Boom } from "@hapi/boom";
-import { IInstanceRepository } from "../contracts/instance.interface";
+import { IInstanceRepository } from "../../domain/contracts/instance.interface";
 
 export class SendGroupTextUseCase implements UseCase<SendGroupTextInput, void> {
   constructor(private readonly repository: IInstanceRepository) {}

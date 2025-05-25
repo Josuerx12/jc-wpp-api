@@ -1,12 +1,10 @@
-import { log } from "console";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
-import { UserRoles } from "../../infra/models/user.model";
-import { IUserRepository } from "../contracts/user-repository.interface";
-import { User } from "../entities/user.entity";
-import { DocumentVO } from "../vo/document.vo";
-import { EmailVO } from "../vo/email.vo";
+import { IUserRepository } from "../../domain/contracts/user-repository.interface";
+import { User } from "../../domain/entities/user.entity";
+import { DocumentVO } from "../../domain/vo/document.vo";
+import { EmailVO } from "../../domain/vo/email.vo";
 
 export class UpdateUserUseCase implements UseCase<UpdateUserInput, User> {
   constructor(private readonly repository: IUserRepository) {}

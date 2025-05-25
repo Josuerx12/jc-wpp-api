@@ -3,7 +3,7 @@ import { AppError } from "../../../../shared/infra/middlewares/error.middleware"
 import { MailEntity } from "../../../mail/domain/entites/mail.entity";
 import { changedPasswordSuccessEmailHTML } from "../../../mail/domain/templates/changed-password.email";
 import { mail } from "../../../mail/infra/transporter";
-import { IUserRepository } from "../contracts/user-repository.interface";
+import { IUserRepository } from "../../domain/contracts/user-repository.interface";
 
 export class ResetPasswordUseCase implements UseCase<ResetPasswordInput, void> {
   constructor(private readonly repository: IUserRepository) {}

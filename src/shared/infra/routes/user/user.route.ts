@@ -1,116 +1,31 @@
-import { Request, Router } from "express";
-import { UserSecretRepository } from "../../../../core/user/infra/repositories/user-secret.repository";
-import { CreateUserUseCase } from "../../../../core/user/domain/use-cases/create-user.use-case";
-import { UpdateUserUseCase } from "../../../../core/user/domain/use-cases/update-user.use-case";
+import { Router } from "express";
 import { checkAuth } from "../../middlewares/check-auth.middleware";
-import { GetAllUsersUseCase } from "../../../../core/user/domain/use-cases/get-all-users.use-case";
-import authStorage from "../auth/auth.storage";
-import { UserInstances } from "../../../../core/user/domain/use-cases/user-instances.use-case";
-import { InstanceRepository } from "../../../../core/instances/infra/repositories/instance.repository";
-import { ChangePasswordUseCase } from "../../../../core/user/domain/use-cases/change-password.use-case";
-import { GetUserSecretOrCreateByUserUseCase } from "../../../../core/user/domain/use-cases/get-secret-or-create-by-user.use-case";
-import { UserRepository } from "../../../../core/user/infra/repositories/user.repository";
-import { RefreshUserSecretUseCase } from "../../../../core/user/domain/use-cases/refresh-user-secret.use-case";
-import { DeleteInstanceUseCase } from "../../../../core/instances/domain/use-cases/delete-instance.use-case";
-import { DeleteUserUseCase } from "../../../../core/user/domain/use-cases/delete-user.use-case";
+import { UserController } from "../../../../core/user/application/controllers/user.controller";
 
 const userRouter: Router = Router();
 
-const userRepo = new UserRepository();
-const instanceRepo = new InstanceRepository();
-const userSecretRepo = new UserSecretRepository();
+const controller = new UserController();
 
-const createUserUseCase = new CreateUserUseCase(userRepo);
-const updateUserUseCase = new UpdateUserUseCase(userRepo);
-const getAllUsersUseCase = new GetAllUsersUseCase(userRepo);
-const getUserInstancesUseCase = new UserInstances(instanceRepo);
-const changePasswordUseCase = new ChangePasswordUseCase(userRepo);
-const getUserSecretOrCreateByUserUseCase =
-  new GetUserSecretOrCreateByUserUseCase(userSecretRepo);
-const refreshUserSecretUseCase = new RefreshUserSecretUseCase(userSecretRepo);
-const deleteInstanceUseCase = new DeleteInstanceUseCase(instanceRepo);
-const deleteUserUseCase = new DeleteUserUseCase(
-  userRepo,
-  instanceRepo,
-  deleteInstanceUseCase
+userRouter.post(
+  "/refresh-user-secret",
+  checkAuth,
+  controller.refreshUserSecret
 );
 
-userRouter.post("/refresh-user-secret", checkAuth, async (req, res) => {
-  const result = await refreshUserSecretUseCase.execute();
+userRouter.get("/user-secret", checkAuth, controller.getUserSecret);
 
-  res.json({
-    message: "Chave secreta atualizada com sucesso!",
-    data: result,
-  });
-});
+userRouter.post("/", checkAuth, controller.create);
 
-userRouter.post("/", async (req, res) => {
-  const result = await createUserUseCase.execute(req.body);
+userRouter.put("/:id", checkAuth, controller.update);
 
-  res.json({
-    message: "Usuário criado com sucesso!",
-    data: result,
-  });
-});
+userRouter.get("/user-logged", checkAuth, controller.getMe);
 
-userRouter.put("/:id", checkAuth, async (req, res) => {
-  const id = req.params.id;
+userRouter.get("/:id/instances", checkAuth, controller.getUserInstances);
 
-  const result = await updateUserUseCase.execute({
-    id,
-    ...req.body,
-  });
-  res.json({ message: "Usuário editado com sucesso!", result });
-});
+userRouter.get("/", checkAuth, controller.getAll);
 
-userRouter.get("/user-secret", checkAuth, async (req, res) => {
-  const result = await getUserSecretOrCreateByUserUseCase.execute();
+userRouter.post("/change-password", checkAuth, controller.changePassword);
 
-  res.json({ data: result });
-});
-
-userRouter.get("/user-logged", checkAuth, async (req: Request, res) => {
-  const user = authStorage.get().user();
-
-  delete user.password;
-  delete user.code;
-
-  res.json({ data: user });
-});
-
-userRouter.get("/:id/instances", checkAuth, async (req, res) => {
-  const result = await getUserInstancesUseCase.execute({
-    userId: req.params.id,
-  });
-
-  res.json(result);
-});
-
-userRouter.get("/", checkAuth, async (req, res) => {
-  const user = authStorage.get().user();
-
-  const payload = await getAllUsersUseCase.execute({
-    ...req.query,
-    user,
-  });
-
-  res.status(200).json({ payload });
-});
-
-userRouter.post("/change-password", checkAuth, async (req, res) => {
-  await changePasswordUseCase.execute(req.body);
-
-  res.status(204).end();
-});
-
-userRouter.delete("/:id", checkAuth, async (req, res) => {
-  const id = req.params.id;
-
-  await deleteUserUseCase.execute({
-    id,
-  });
-
-  res.status(204).end();
-});
+userRouter.delete("/:id", checkAuth, controller.deleteById);
 
 export default userRouter;

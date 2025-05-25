@@ -5,14 +5,12 @@ import {
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import makeWASocket, { DisconnectReason } from "baileys";
 import { Boom } from "@hapi/boom";
-import { IInstanceRepository } from "../contracts/instance.interface";
+import { IInstanceRepository } from "../../domain/contracts/instance.interface";
 
-export class SendButtonTextUseCase
-  implements UseCase<SendButtonTextInput, void>
-{
+export class SendTextUseCase implements UseCase<SendTextInput, void> {
   constructor(private readonly repository: IInstanceRepository) {}
 
-  async execute(input: SendButtonTextInput): Promise<void> {
+  async execute(input: SendTextInput): Promise<void> {
     const session = await this.repository.getById(input.sessionId);
 
     if (!session) {
@@ -41,28 +39,7 @@ export class SendButtonTextUseCase
 
           const jid = `${input.to}@s.whatsapp.net`;
           try {
-            await sock.relayMessage(
-              jid,
-              {
-                messageContextInfo: {
-                  deviceListMetadata: {},
-                  deviceListMetadataVersion: 2,
-                },
-                interactiveMessage: {
-                  body: {
-                    text: input.message,
-                  },
-                  nativeFlowMessage: {
-                    buttons: [
-                      {
-                        name: "send_location",
-                      },
-                    ],
-                  },
-                },
-              },
-              {}
-            );
+            await sock.sendMessage(jid, { text: input.message });
             messageSent = true;
 
             console.log("📨 Mensagem enviada com sucesso.");
@@ -100,10 +77,8 @@ export class SendButtonTextUseCase
   }
 }
 
-export type SendButtonTextInput = {
+export type SendTextInput = {
   sessionId: string;
   message: string;
-  buttonText: string;
-  buttonContent: string;
   to: string;
 };
