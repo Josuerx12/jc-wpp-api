@@ -12,6 +12,7 @@ import { RefreshUserSecretUseCase } from "../use-cases/refresh-user-secret.use-c
 import { UpdateUserUseCase } from "../use-cases/update-user.use-case";
 import { UserInstances } from "../use-cases/user-instances.use-case";
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
+import { UserInputParams } from "../../domain/contracts/user-repository.interface";
 
 export class UserController {
   private userRepo = new UserRepository();
@@ -103,8 +104,9 @@ export class UserController {
   };
 
   getAll = async (req: Request, res: Response) => {
-    const payload = await this.getAllUsersUseCase.execute(req.query as any);
+    const input = new UserInputParams(req.query);
+    const payload = await this.getAllUsersUseCase.execute(input);
 
-    res.status(200).json({ payload });
+    res.status(200).json(payload);
   };
 }

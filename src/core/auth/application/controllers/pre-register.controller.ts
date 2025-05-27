@@ -4,6 +4,7 @@ import { ApproveRegisterUseCase } from "../use-cases/approve-register.use-case";
 import { UserRepository } from "../../../user/infra/repositories/user.repository";
 import { PreRegisterRepository } from "../../infra/repositories/pre-register.repository";
 import { GetAllPreRegisterUseCase } from "../use-cases/get-all-pre-register.use-case";
+import { PreRegisterInputParams } from "../../domain/contracts/pre-register.interface";
 
 export class PreRegisterController {
   private preRegisterRepository = new PreRegisterRepository();
@@ -30,10 +31,10 @@ export class PreRegisterController {
   };
 
   getAll = async (req: Request, res: Response) => {
-    const payload = await this.getAllPreRegisterUseCase.execute(
-      req.query as any
-    );
+    const input = new PreRegisterInputParams(req.query);
 
-    res.status(200).json({ payload });
+    const payload = await this.getAllPreRegisterUseCase.execute(input);
+
+    res.status(200).json(payload);
   };
 }

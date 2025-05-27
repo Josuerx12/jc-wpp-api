@@ -11,10 +11,12 @@ import { UserModelMapper } from "../models/user.model.mapper";
 export class UserRepository implements IUserRepository {
   async getAll(props: UserInputParams): Promise<UserOutputParams> {
     const where: Prisma.UserWhereInput = {
-      name: { contains: props.filter || "", mode: "insensitive" },
-      document: { contains: props.filter || "", mode: "insensitive" },
-      email: { contains: props.filter || "", mode: "insensitive" },
-      phone: { contains: props.filter || "", mode: "insensitive" },
+      OR: [
+        { name: { contains: props.filter || "", mode: "insensitive" } },
+        { document: { contains: props.filter || "", mode: "insensitive" } },
+        { email: { contains: props.filter || "", mode: "insensitive" } },
+        { phone: { contains: props.filter || "", mode: "insensitive" } },
+      ],
     };
 
     const totalItems = await prisma.user.count({ where });

@@ -1,3 +1,4 @@
+import { Prisma } from "../../../../generated/prisma";
 import { prisma } from "../../../../shared/infra/config/prisma";
 import {
   IPreRegisterRepository,
@@ -30,8 +31,35 @@ export class PreRegisterRepository implements IPreRegisterRepository {
     return preRegister ? PreRegisterModelMapper.toEntity(preRegister) : null;
   }
 
-  getAll(props: PreRegisterInputParams): Promise<PreRegisterOutputParams> {
-    throw new Error("Method not implemented.");
+  async getAll(
+    props: PreRegisterInputParams
+  ): Promise<PreRegisterOutputParams> {
+    const where: Prisma.PreRegisterWhereInput = {
+      OR: [
+        { email: { contains: props.filter, mode: "insensitive" } },
+        { document: { contains: props.filter, mode: "insensitive" } },
+        { name: { contains: props.filter, mode: "insensitive" } },
+        { phone: { contains: props.filter, mode: "insensitive" } },
+      ],
+    };
+
+    const totalItems = await prisma.preRegister.count({ where });
+    const totalPages = Math.ceil(props.perPage / props.perPage);
+
+    const entities = await prisma.preRegister.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: props.perPage,
+      skip: (props.page - 1) * props.perPage,
+    });
+
+    return {
+      data: entities.map(PreRegisterModelMapper.toEntity),
+      page: props.page,
+      perPage: props.perPage,
+      totalItems,
+      totalPages,
+    };
   }
 
   async create(entity: PreRegisterEntity): Promise<void | PreRegisterEntity> {

@@ -8,6 +8,7 @@ export class UserModelMapper {
     return {
       ...entity,
       document: entity.document.value,
+      email: entity.email.value,
     };
   }
 

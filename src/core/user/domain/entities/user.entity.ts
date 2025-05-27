@@ -5,6 +5,7 @@ import { InstanceEntity } from "../../../instances/domain/entities/instance.enti
 import { UserSecretEntity } from "./user-secret.entity";
 import { CnpjVo } from "../vo/cnpj.vo";
 import { CpfVo } from "../vo/cpf.vo";
+import { EmailVO } from "../vo/email.vo";
 
 export type UserEntityProps = {
   id?: string;
@@ -27,7 +28,7 @@ export class UserEntity {
   name: string;
   documentType: DocumentTypeEnum;
   document: CnpjVo | CpfVo;
-  email: string;
+  email: EmailVO;
   password: string;
   phone: string;
   role: RoleEnum;
@@ -45,7 +46,7 @@ export class UserEntity {
       props.documentType === DocumentTypeEnum.CNPJ
         ? new CnpjVo(props.document)
         : new CpfVo(props.document);
-    this.email = props.email;
+    this.email = EmailVO.create(props.email);
     this.password = this.setPassword(props.password);
     this.role = props.role ? props.role : RoleEnum.USER;
     this.code = props.code;
