@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
-import { User } from "../../../core/user/domain/entities/user.entity";
 import { config } from "dotenv";
 import authStorage from "../routes/auth/auth.storage";
 import { UserRepository } from "../../../core/user/infra/repositories/user.repository";
+import { UserEntity } from "../../../core/user/domain/entities/user.entity";
 config();
 
 export async function checkAuth(
@@ -28,9 +28,9 @@ export async function checkAuth(
       process.env.SECRET as string
     );
 
-    const user = decoded.sub as unknown as User;
+    const user = decoded.sub as unknown as UserEntity;
 
-    const updatedUser = await userRepo.getById(user.userId);
+    const updatedUser = await userRepo.getById(user.id);
 
     if (!updatedUser) {
       res.status(401).json({ error: "Usuário não encontrado." });

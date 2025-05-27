@@ -1,6 +1,6 @@
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
+import { UserEntity } from "../../../user/domain/entities/user.entity";
 import { IInstanceRepository } from "../../domain/contracts/instance.interface";
-import { User } from "../../../user/domain/entities/user.entity";
 import { InstanceEntity } from "../../domain/entities/instance.entity";
 
 export class InstanceListUseCase
@@ -9,16 +9,14 @@ export class InstanceListUseCase
   constructor(private readonly repository: IInstanceRepository) {}
 
   async execute(input: InstanceListInput): Promise<InstanceListOutput> {
-    const instances = await this.repository.getAllUserInstances(
-      input.user.userId
-    );
+    const instances = await this.repository.getAllUserInstances(input.user.id);
 
     return { instances };
   }
 }
 
 export type InstanceListInput = {
-  user: User;
+  user: UserEntity;
 };
 
 export type InstanceListOutput = {

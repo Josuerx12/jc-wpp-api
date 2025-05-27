@@ -8,7 +8,6 @@ import makeWASocket, {
 } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
-import { UserRoles } from "../../../user/infra/models/user.model.mapper";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 
 export class DeleteInstanceUseCase
@@ -19,19 +18,15 @@ export class DeleteInstanceUseCase
   async execute(input: DeleteInstanceInput): Promise<void> {
     const user = authStorage.get().user();
 
-    const { instanceId } = input;
+    const { sessionId } = input;
 
-    const instance = await this.repository.getById(instanceId);
+    const instance = await this.repository.getBySessionId(sessionId);
 
     if (!instance) {
       throw new Error("Instância não encontrada.");
     }
 
-    if (
-      instance.userId != user.userId &&
-      user.role != UserRoles.ADMIN &&
-      user.role != UserRoles.SUPER
-    ) {
+    if (instance.userId != user.id && !user.isAdmin() && !user.isSuper()) {
       throw new AppError(
         "Você não tem permissão para executar essa ação.",
         401
@@ -56,7 +51,7 @@ export class DeleteInstanceUseCase
         const { connection, lastDisconnect } = update;
 
         if (connection === "open" && !instanceDisconected) {
-          console.log(`✅ Sessão ${input.instanceId} conectada com sucesso.`);
+          console.log(`✅ Sessão ${input.sessionId} conectada com sucesso.`);
 
           try {
             await sock.logout();
@@ -67,9 +62,9 @@ export class DeleteInstanceUseCase
               console.log(`🗑️ AuthPath removido: ${authPath}`);
             }
 
-            await this.repository.delete(instanceId);
+            await this.repository.delete(sessionId);
 
-            console.log(`❌ Instância ${instanceId} removida com sucesso.`);
+            console.log(`❌ Instância ${sessionId} removida com sucesso.`);
 
             resolve();
           } catch (err) {
@@ -84,7 +79,7 @@ export class DeleteInstanceUseCase
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
           if (shouldReconnect) {
-            console.log(`🔄 Tentando reconectar sessão ${input.instanceId}...`);
+            console.log(`🔄 Tentando reconectar sessão ${input.sessionId}...`);
             setTimeout(
               () => this.execute(input).then(resolve).catch(reject),
               3000
@@ -97,5 +92,5 @@ export class DeleteInstanceUseCase
 }
 
 export type DeleteInstanceInput = {
-  instanceId: string;
+  sessionId: string;
 };

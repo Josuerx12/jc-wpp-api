@@ -1,5 +1,3 @@
-import { IUserSecret } from "../../infra/models/user-secret.model.mapper";
-
 export type UserSecretEntityProps = {
   id?: string;
   userId: string;

@@ -1,47 +1,53 @@
-import { IPreRegisterRepository } from "../../domain/contracts/pre-register.interface";
+import { prisma } from "../../../../shared/infra/config/prisma";
+import {
+  IPreRegisterRepository,
+  PreRegisterInputParams,
+  PreRegisterOutputParams,
+} from "../../domain/contracts/pre-register.interface";
 import { PreRegisterEntity } from "../../domain/entities/pre-register.entity";
-import { PreRegisterModel } from "../models/pre-register.model";
+import { PreRegisterModelMapper } from "../models/pre-register.model.mapper";
 
 export class PreRegisterRepository implements IPreRegisterRepository {
-  private model = PreRegisterModel;
-
   async getById(id: string): Promise<PreRegisterEntity> {
-    const preRegister = (
-      await this.model.findOne({ preRegisterId: id })
-    ).toJSON();
+    const preRegister = await prisma.preRegister.findUnique({ where: { id } });
 
-    return preRegister ? new PreRegisterEntity(preRegister as any) : null;
+    return preRegister ? PreRegisterModelMapper.toEntity(preRegister) : null;
   }
 
   async getByEmail(email: string): Promise<PreRegisterEntity> {
-    const preRegister = await this.model.findOne({ email });
+    const preRegister = await prisma.preRegister.findUnique({
+      where: { email },
+    });
 
-    return preRegister ? new PreRegisterEntity(preRegister as any) : null;
+    return preRegister ? PreRegisterModelMapper.toEntity(preRegister) : null;
   }
 
   async getByDocument(document: string): Promise<PreRegisterEntity> {
-    const preRegister = await this.model.findOne({ document });
+    const preRegister = await prisma.preRegister.findUnique({
+      where: { document },
+    });
 
-    return preRegister ? new PreRegisterEntity(preRegister as any) : null;
+    return preRegister ? PreRegisterModelMapper.toEntity(preRegister) : null;
   }
 
-  async getAll(): Promise<PreRegisterEntity[]> {
-    const preRegisters = await this.model.find().lean();
-
-    const entities = preRegisters.map((u) => new PreRegisterEntity(u as any));
-
-    return entities;
+  getAll(props: PreRegisterInputParams): Promise<PreRegisterOutputParams> {
+    throw new Error("Method not implemented.");
   }
 
   async create(entity: PreRegisterEntity): Promise<void | PreRegisterEntity> {
-    await this.model.create(entity);
+    await prisma.preRegister.create({
+      data: PreRegisterModelMapper.toModel(entity),
+    });
   }
 
   async update(entity: PreRegisterEntity): Promise<void | PreRegisterEntity> {
-    await this.model.updateOne({ preRegisterId: entity.preRegisterId }, entity);
+    await prisma.preRegister.update({
+      where: { id: entity.id },
+      data: PreRegisterModelMapper.toModel(entity),
+    });
   }
 
   async delete(id: string): Promise<void | PreRegisterEntity> {
-    await this.model.deleteOne({ preRegisterId: id });
+    await prisma.preRegister.delete({ where: { id } });
   }
 }

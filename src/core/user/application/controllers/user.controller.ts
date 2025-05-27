@@ -103,12 +103,7 @@ export class UserController {
   };
 
   getAll = async (req: Request, res: Response) => {
-    const user = authStorage.get().user();
-
-    const payload = await this.getAllUsersUseCase.execute({
-      ...req.query,
-      user,
-    });
+    const payload = await this.getAllUsersUseCase.execute(req.query as any);
 
     res.status(200).json({ payload });
   };

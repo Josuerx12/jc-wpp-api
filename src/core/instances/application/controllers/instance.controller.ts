@@ -21,22 +21,16 @@ export class InstanceController {
   private createGroupUseCase = new CreateGroupUseCase(this.sessionRepo);
 
   connect = async (req: Request, res: Response) => {
-    const instance = req?.body?.instanceId;
+    const instance = req?.body?.sessionId;
 
-    const {
-      qrCode,
-      instanceId,
-      message,
-      bussinessProfile,
-      avatarUrl,
-      profile,
-    } = await this.connectInstanceUseCase.execute({
-      instanceId: instance,
-    });
+    const { qrCode, sessionId, message, bussinessProfile, avatarUrl, profile } =
+      await this.connectInstanceUseCase.execute({
+        sessionId: instance,
+      });
 
     res.json({
       message,
-      instanceId,
+      sessionId,
       qrCode,
       profile,
       bussinessProfile,
@@ -53,7 +47,7 @@ export class InstanceController {
   };
 
   deleteById = async (req: Request, res: Response) => {
-    await this.deleteInstanceUseCase.execute({ instanceId: req.params.id });
+    await this.deleteInstanceUseCase.execute({ sessionId: req.params.id });
 
     res.status(200).end();
   };

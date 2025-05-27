@@ -1,28 +1,22 @@
-import { PaginationOutput } from "../../../../shared/domain/contracts/pagination-output";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
-import { User } from "../../../user/domain/entities/user.entity";
-import { UserRoles } from "../../../user/infra/models/user.model.mapper";
+import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
 import {
   IPreRegisterRepository,
   PreRegisterInputParams,
+  PreRegisterOutputParams,
 } from "../../domain/contracts/pre-register.interface";
-import { PreRegisterEntity } from "../../domain/entities/pre-register.entity";
-
-export type GetAllPreRegistersInput = {
-  user: User;
-} & PreRegisterInputParams;
 
 export class GetAllPreRegisterUseCase
-  implements
-    UseCase<GetAllPreRegistersInput, PaginationOutput<PreRegisterEntity>>
+  implements UseCase<PreRegisterInputParams, PreRegisterOutputParams>
 {
   constructor(private readonly repository: IPreRegisterRepository) {}
 
   async execute(
-    input: GetAllPreRegistersInput
-  ): Promise<PaginationOutput<PreRegisterEntity>> {
-    if (input.user.role.includes(UserRoles.USER)) {
+    input: PreRegisterInputParams
+  ): Promise<PreRegisterOutputParams> {
+    const user = authStorage.get().user();
+    if (user.isUser()) {
       throw new AppError("Você não tem permissão para acessar está rota.");
     }
 

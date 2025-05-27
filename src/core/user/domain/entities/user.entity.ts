@@ -3,6 +3,8 @@ import { AppError } from "../../../../shared/infra/middlewares/error.middleware"
 import { DocumentTypeEnum, RoleEnum } from "../../../../generated/prisma";
 import { InstanceEntity } from "../../../instances/domain/entities/instance.entity";
 import { UserSecretEntity } from "./user-secret.entity";
+import { CnpjVo } from "../vo/cnpj.vo";
+import { CpfVo } from "../vo/cpf.vo";
 
 export type UserEntityProps = {
   id?: string;
@@ -24,7 +26,7 @@ export class UserEntity {
   id: string;
   name: string;
   documentType: DocumentTypeEnum;
-  document: string;
+  document: CnpjVo | CpfVo;
   email: string;
   password: string;
   phone: string;
@@ -38,7 +40,11 @@ export class UserEntity {
   constructor(props: UserEntityProps) {
     this.id = props.id;
     this.name = props.name;
-    this.document = props.document;
+    this.documentType = props.documentType;
+    this.document =
+      props.documentType === DocumentTypeEnum.CNPJ
+        ? new CnpjVo(props.document)
+        : new CpfVo(props.document);
     this.email = props.email;
     this.password = this.setPassword(props.password);
     this.role = props.role ? props.role : RoleEnum.USER;

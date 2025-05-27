@@ -1,4 +1,5 @@
 import { Prisma } from "../../../../generated/prisma";
+import { InstanceModelMapper } from "../../../instances/infra/models/instance.model.mapper";
 import { UserEntity } from "../../domain/entities/user.entity";
 import { UserSecretModelMapper } from "./user-secret.model.mapper";
 
@@ -6,13 +7,16 @@ export class UserModelMapper {
   static toModel(entity: UserEntity): Prisma.UserCreateInput {
     return {
       ...entity,
+      document: entity.document.value,
     };
   }
 
   static toEntity(
-    model: Prisma.UserGetPayload<{
-      include: { Instance: true; UserSecret: true };
-    }>
+    model: Partial<
+      Prisma.UserGetPayload<{
+        include: { Instance: true; UserSecret: true };
+      }>
+    >
   ) {
     return new UserEntity({
       id: model.id,
@@ -20,6 +24,7 @@ export class UserModelMapper {
       document: model.document,
       documentType: model.documentType,
       email: model.email,
+      phone: model.phone,
       code: model.code,
       password: model.password,
       role: model.role,

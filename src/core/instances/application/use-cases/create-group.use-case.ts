@@ -13,7 +13,7 @@ export class CreateGroupUseCase
   constructor(private readonly repository: IInstanceRepository) {}
 
   async execute(input: CreateGroupInput): Promise<{ groupId?: string }> {
-    const session = await this.repository.getById(input.sessionId);
+    const session = await this.repository.getBySessionId(input.sessionId);
 
     if (!session) {
       throw new Error("Não foi possível encontrar a sessão.");

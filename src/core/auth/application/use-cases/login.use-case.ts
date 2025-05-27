@@ -1,9 +1,9 @@
 import { sign } from "jsonwebtoken";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
-import { User } from "../../../user/domain/entities/user.entity";
 import { config } from "dotenv";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
+import { UserEntity } from "../../../user/domain/entities/user.entity";
 config();
 
 export class LoginUseCase implements UseCase<LoginInput, LoginOutput> {
@@ -37,5 +37,5 @@ export type LoginInput = {
 
 export type LoginOutput = {
   access_token: string;
-  user: User;
+  user: UserEntity;
 };

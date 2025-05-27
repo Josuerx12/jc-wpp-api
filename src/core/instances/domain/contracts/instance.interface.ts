@@ -17,4 +17,5 @@ export interface IInstanceRepository
   > {
   getAllUserInstances(userId: string): Promise<InstanceEntity[]>;
   createOrUpdate(entity: InstanceEntity): Promise<InstanceEntity>;
+  getBySessionId(sessionId: string): Promise<InstanceEntity | null>;
 }

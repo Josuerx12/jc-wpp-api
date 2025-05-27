@@ -1,19 +1,17 @@
 import { v4 } from "uuid";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
-import { User } from "../../../user/domain/entities/user.entity";
 import { mail } from "../../../mail/infra/transporter";
 import { MailEntity } from "../../../mail/domain/entites/mail.entity";
 import { generateApprovedRegisterEmailHTML } from "../../../mail/domain/templates/approved-register.email";
-import { UserRoles } from "../../../user/infra/models/user.model.mapper";
 import { GenerateRandomString } from "../../../../shared/helpers";
 import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
 import { IPreRegisterRepository } from "../../domain/contracts/pre-register.interface";
+import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
+import { UserEntity } from "../../../user/domain/entities/user.entity";
 
 export type ApproveRegisterInput = {
   id: string;
-
-  user: User;
 };
 
 export class ApproveRegisterUseCase
@@ -26,9 +24,11 @@ export class ApproveRegisterUseCase
 
   async execute(input: ApproveRegisterInput): Promise<void> {
     try {
+      const user = authStorage.get().user();
+
       const preRegister = await this.preRegisterRepo.getById(input.id);
 
-      if (input.user && input.user.role === UserRoles.USER) {
+      if (user && user.isUser) {
         throw new AppError(
           "Você não tem permissão para acessar essa rota",
           401
@@ -39,28 +39,26 @@ export class ApproveRegisterUseCase
         throw new AppError("Nenhum pre registro encontrado para esse id.", 400);
       }
 
-      const generatedPass = GenerateRandomString(8);
-
-      const user = new User({
-        userId: v4(),
+      const entity = new UserEntity({
         name: preRegister.name,
-        document: preRegister.document,
-        email: preRegister.email,
-        password: generatedPass,
-        isTempPass: true,
+        document: preRegister.document.value,
+        email: preRegister.email.value,
+        password: preRegister.password,
+        documentType: preRegister.documentType,
+        phone: preRegister.phone,
       });
 
-      await this.userRepo.create(user);
+      await this.userRepo.create(entity);
 
       mail.sendMail(
         new MailEntity({
-          to: user.email,
+          to: entity.email,
           subject: "Cadastro aprovado - Acesse sua conta na JCWPPAPI!",
-          html: generateApprovedRegisterEmailHTML(user.name, generatedPass),
+          html: generateApprovedRegisterEmailHTML(user.name),
         })
       );
 
-      await this.preRegisterRepo.delete(preRegister.preRegisterId);
+      await this.preRegisterRepo.delete(preRegister.id);
     } catch (error: any) {
       throw new AppError(error.message, 400);
     }

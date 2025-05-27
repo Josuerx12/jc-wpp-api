@@ -1,10 +1,10 @@
 import { AsyncLocalStorage } from "async_hooks";
-import { User } from "../../../../core/user/domain/entities/user.entity";
 import { NextFunction, Request, Response } from "express";
 import { AppError } from "../../middlewares/error.middleware";
+import { UserEntity } from "../../../../core/user/domain/entities/user.entity";
 
 type StoreData = {
-  user?: User;
+  user?: UserEntity;
 };
 
 class AuthStorage {

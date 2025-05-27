@@ -1,22 +1,29 @@
+import { Prisma } from "../../../../generated/prisma";
+import { prisma } from "../../../../shared/infra/config/prisma";
+import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
 import {
-  GetAllUserSecretsInputParams,
   IUserSecretRepository,
+  UserSecretInputParams,
+  UserSecretOutputParams,
 } from "../../domain/contracts/user-secret-repository.interface";
-import { UserSecret } from "../../domain/entities/user-secret.entity";
-import { UserSecretModel } from "../models/user-secret.model.mapper";
+import { UserSecretEntity } from "../../domain/entities/user-secret.entity";
+import { UserSecretModelMapper } from "../models/user-secret.model.mapper";
 
 export class UserSecretRepository implements IUserSecretRepository {
-  private model = UserSecretModel;
-
-  async getBySecret(secret: string): Promise<UserSecret | null> {
-    const userSecret = await this.model.findOne({ secret });
-    return userSecret ? new UserSecret(userSecret) : null;
+  getAll(props: UserSecretInputParams): Promise<UserSecretOutputParams> {
+    return;
+  }
+  async getBySecret(secret: string): Promise<UserSecretEntity | null> {
+    const userSecret = await prisma.userSecret.findFirst({
+      where: { secret },
+    });
+    return userSecret ? UserSecretModelMapper.toEntity(userSecret) : null;
   }
 
-  async getByUserId(userId: string): Promise<UserSecret | null> {
-    const userSecret = await this.model.findOne({ userId });
+  async getByUserId(userId: string): Promise<UserSecretEntity | null> {
+    const userSecret = await prisma.userSecret.findFirst({ where: { userId } });
 
-    return userSecret ? new UserSecret(userSecret) : null;
+    return userSecret ? UserSecretModelMapper.toEntity(userSecret) : null;
   }
 
   async generateRandomSecret(): Promise<string> {
@@ -24,8 +31,11 @@ export class UserSecretRepository implements IUserSecretRepository {
     let randomSecret: string;
 
     while (!isUnique) {
-      randomSecret = UserSecret.generateRandomSecret();
-      const alreadyExists = await this.model.findOne({ secret: randomSecret });
+      randomSecret = UserSecretEntity.generateRandomSecret();
+      const alreadyExists = await prisma.userSecret.findFirst({
+        where: { secret: randomSecret },
+        select: { secret: true },
+      });
       if (!alreadyExists) {
         isUnique = true;
       }
@@ -34,25 +44,26 @@ export class UserSecretRepository implements IUserSecretRepository {
     return randomSecret;
   }
 
-  getAll(props: GetAllUserSecretsInputParams): Promise<UserSecret[]> {
-    throw new Error("Method not implemented.");
+  async getById(id: string): Promise<UserSecretEntity> {
+    const userSecret = await prisma.userSecret.findFirst({ where: { id } });
+
+    return userSecret ? UserSecretModelMapper.toEntity(userSecret) : null;
   }
 
-  async getById(id: string): Promise<UserSecret> {
-    const userSecret = await this.model.findOne({ userSecretId: id });
-
-    return userSecret ? new UserSecret(userSecret as any) : null;
+  async create(entity: UserSecretEntity): Promise<void | UserSecretEntity> {
+    await prisma.userSecret.create({
+      data: UserSecretModelMapper.toModel(entity),
+    });
   }
 
-  async create(entity: UserSecret): Promise<void | UserSecret> {
-    await this.model.create(entity);
+  async update(entity: UserSecretEntity): Promise<void | UserSecretEntity> {
+    await prisma.userSecret.update({
+      where: { id: entity.id },
+      data: UserSecretModelMapper.toModel(entity),
+    });
   }
 
-  async update(entity: UserSecret): Promise<void | UserSecret> {
-    await this.model.updateOne({ userSecretId: entity.userSecretId }, entity);
-  }
-
-  async delete(id: string): Promise<void | UserSecret> {
-    await this.model.deleteOne({ userSecretId: id });
+  async delete(id: string): Promise<void | UserSecretEntity> {
+    await prisma.userSecret.delete({ where: { id } });
   }
 }

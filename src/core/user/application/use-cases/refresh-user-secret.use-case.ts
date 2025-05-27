@@ -1,14 +1,16 @@
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
 import { IUserSecretRepository } from "../../domain/contracts/user-secret-repository.interface";
-import { UserSecret } from "../../domain/entities/user-secret.entity";
+import { UserSecretEntity } from "../../domain/entities/user-secret.entity";
 
-export class RefreshUserSecretUseCase implements UseCase<null, UserSecret> {
+export class RefreshUserSecretUseCase
+  implements UseCase<null, UserSecretEntity>
+{
   constructor(private userSecretRepository: IUserSecretRepository) {}
 
-  async execute(): Promise<UserSecret> {
+  async execute(): Promise<UserSecretEntity> {
     const user = authStorage.get().user();
-    const userId = user.userId;
+    const userId = user.id;
 
     const userSecret = await this.userSecretRepository.getByUserId(userId);
 

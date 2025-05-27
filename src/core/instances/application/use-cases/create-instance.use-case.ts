@@ -11,6 +11,7 @@ import { Boom } from "@hapi/boom";
 import { instanceEvents } from "../../../../shared/infra/events/sse-event.emitter";
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
 import { IInstanceRepository } from "../../domain/contracts/instance.interface";
+import { InstanceEntity } from "../../domain/entities/instance.entity";
 
 export class ConnectInstanceUseCase
   implements UseCase<ConnectConnectionWppInput, ConnectionWppOutput>
@@ -20,15 +21,15 @@ export class ConnectInstanceUseCase
   async execute(
     input: ConnectConnectionWppInput
   ): Promise<ConnectionWppOutput> {
-    const instanceId = input.instanceId ?? v4();
-    const { userId } = authStorage.get().user();
+    const sessionId = input.sessionId ?? v4();
+    const { id } = authStorage.get().user();
 
-    const instance = await this.repository.getById(instanceId);
+    const instance = await this.repository.getBySessionId(sessionId);
 
     let authPath: string;
 
     if (!instance) {
-      authPath = `auth/${instanceId}`;
+      authPath = `auth/${sessionId}`;
       fs.mkdirSync(authPath, { recursive: true });
     } else {
       authPath = instance?.authPath;
@@ -56,7 +57,7 @@ export class ConnectInstanceUseCase
             resolved = true;
             resolve({
               qrCode: qrCodeBase64,
-              instanceId,
+              sessionId,
               message:
                 "Foi criada uma nova conexão para a instancia, conecte-se via qr-code.",
             });
@@ -66,16 +67,14 @@ export class ConnectInstanceUseCase
         }
 
         if (connection === "open" && !resolved) {
-          console.log(`✅ Conexão estabelecida para instancia ${instanceId}`);
+          console.log(`✅ Conexão estabelecida para instancia ${sessionId}`);
           try {
             if (!instance) {
-              await this.repository.createOrUpdate({
-                userId,
-                instanceId,
-                authPath,
-              });
+              await this.repository.createOrUpdate(
+                new InstanceEntity({ userId: id, sessionId, authPath })
+              );
 
-              instanceEvents.emit("instance_connected", { instanceId });
+              instanceEvents.emit("instance_connected", { sessionId });
             } else {
               await this.repository.createOrUpdate({
                 ...instance,
@@ -97,7 +96,7 @@ export class ConnectInstanceUseCase
             connected = true;
 
             resolve({
-              instanceId,
+              sessionId,
               message: "Instancia já conectada!",
               profile,
               bussinessProfile,
@@ -119,21 +118,21 @@ export class ConnectInstanceUseCase
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
           if (shouldReconnect) {
-            console.log(`🔄 Tentando reconectar instancia ${instanceId}...`);
-            setTimeout(() => this.execute({ ...input, instanceId }), 3000);
+            console.log(`🔄 Tentando reconectar instancia ${sessionId}...`);
+            setTimeout(() => this.execute({ ...input, sessionId }), 3000);
           } else {
             console.log(
-              `⚠️ Instancia ${instanceId} deslogada. Recriando sessão...`
+              `⚠️ Instancia ${sessionId} deslogada. Recriando sessão...`
             );
 
             try {
               fs.rmSync(authPath, { recursive: true, force: true });
-              console.log(`🗑️ Sessão removida para ${instanceId}`);
+              console.log(`🗑️ Sessão removida para ${sessionId}`);
             } catch (err) {
               console.error("Erro ao remover authPath:", err);
             }
 
-            this.execute({ instanceId }).then(resolve).catch(reject);
+            this.execute({ sessionId }).then(resolve).catch(reject);
 
             resolved = true;
           }
@@ -146,11 +145,11 @@ export class ConnectInstanceUseCase
 }
 
 export type ConnectConnectionWppInput = {
-  instanceId?: string;
+  sessionId?: string;
 };
 
 export type ConnectionWppOutput = {
-  instanceId: string;
+  sessionId: string;
   message: string;
   qrCode?: string;
   profile?: any;

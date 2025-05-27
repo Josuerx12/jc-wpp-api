@@ -31,17 +31,17 @@ export class DeleteUserUseCase implements UseCase<DeleteUserInput, void> {
       throw new Error("Usuário não encontrado.");
     }
 
-    const instances = await this.instanceRepo.getAllUserInstances(user.userId);
+    const instances = await this.instanceRepo.getAllUserInstances(user.id);
 
-    const promises = instances?.map(async ({ instanceId }) => {
+    const promises = instances?.map(async ({ sessionId }) => {
       await this.deleteInstanceUseCase.execute({
-        instanceId,
+        sessionId,
       });
     });
 
     await Promise.all(promises);
 
-    await this.repository.delete(user.userId);
+    await this.repository.delete(user.id);
 
     mail.sendMail(
       new MailEntity({

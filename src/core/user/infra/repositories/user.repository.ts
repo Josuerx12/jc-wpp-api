@@ -34,6 +34,7 @@ export class UserRepository implements IUserRepository {
       totalPages,
     };
   }
+
   async getById(id: string): Promise<UserEntity> {
     const model = await prisma.user.findUnique({ where: { id } });
 

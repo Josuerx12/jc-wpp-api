@@ -30,12 +30,9 @@ export class PreRegisterController {
   };
 
   getAll = async (req: Request, res: Response) => {
-    const user = authStorage.get().user();
-
-    const payload = await this.getAllPreRegisterUseCase.execute({
-      ...req.query,
-      user,
-    });
+    const payload = await this.getAllPreRegisterUseCase.execute(
+      req.query as any
+    );
 
     res.status(200).json({ payload });
   };

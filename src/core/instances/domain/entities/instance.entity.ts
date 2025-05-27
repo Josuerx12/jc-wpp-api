@@ -1,17 +1,24 @@
-import { IInstance } from "../../infra/models/instance.model";
-
-export class InstanceEntity {
-  instanceId: string;
+type EntityProps = {
+  id?: string;
   userId: string;
+  sessionId: string;
   authPath: string;
   createdAt?: Date;
   updatedAt?: Date;
+};
 
-  constructor(
-    props: Partial<IInstance> & { createdAt?: Date; updatedAt?: Date }
-  ) {
+export class InstanceEntity {
+  id: string;
+  userId: string;
+  authPath: string;
+  sessionId: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+
+  constructor(props: EntityProps) {
+    this.id = props.id;
     this.userId = props.userId;
-    this.instanceId = props.instanceId;
+    this.sessionId = props.sessionId;
     this.authPath = props.authPath;
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();

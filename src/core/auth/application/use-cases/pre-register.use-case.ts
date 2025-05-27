@@ -1,10 +1,10 @@
+import { DocumentTypeEnum } from "../../../../generated/prisma";
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 import { MailEntity } from "../../../mail/domain/entites/mail.entity";
 import { generatePreRegisterEmailHTML } from "../../../mail/domain/templates/pre-register.mail";
 import { mail } from "../../../mail/infra/transporter";
 import { IUserRepository } from "../../../user/domain/contracts/user-repository.interface";
-import { DocumentVO } from "../../../user/domain/vo/document.vo";
 import { EmailVO } from "../../../user/domain/vo/email.vo";
 import { IPreRegisterRepository } from "../../domain/contracts/pre-register.interface";
 import { PreRegisterEntity } from "../../domain/entities/pre-register.entity";
@@ -18,15 +18,14 @@ export class PreRegisterUseCase
   ) {}
   async execute(input: PreRegisterInput): Promise<void> {
     try {
-      const email = EmailVO.create(input.email);
-      const document = DocumentVO.create(input.document.replace(/\D/g, ""));
+      const preRegister = new PreRegisterEntity(input);
 
       const emailAlreadyPreRegistered = await this.repository.getByEmail(
-        email.value
+        preRegister.email.value
       );
 
       const emailAlreadyRegistered = await this.userRepo.getByEmail(
-        email.value
+        preRegister.email.value
       );
 
       if (emailAlreadyPreRegistered || emailAlreadyRegistered) {
@@ -37,11 +36,11 @@ export class PreRegisterUseCase
       }
 
       const documentAlreadyPreRegistered = await this.repository.getByDocument(
-        document.value
+        preRegister.document.value
       );
 
       const documentAlreadyRegistered = await this.userRepo.getByDocument(
-        document.value
+        preRegister.document.value
       );
 
       if (documentAlreadyPreRegistered || documentAlreadyRegistered) {
@@ -51,17 +50,11 @@ export class PreRegisterUseCase
         );
       }
 
-      const preRegister = new PreRegisterEntity({
-        ...input,
-        document: document.value,
-        email: email.value,
-      });
-
       await this.repository.create(preRegister);
 
       mail.sendMail(
         new MailEntity({
-          to: preRegister.email,
+          to: preRegister.email.value,
           subject: "Pré-cadastro JCWPPAPI realizado com sucesso!",
           html: generatePreRegisterEmailHTML(preRegister.name),
         })
@@ -77,6 +70,8 @@ export type PreRegisterInput = {
   email: string;
   phone: string;
   document: string;
+  documentType: DocumentTypeEnum;
+  password: string;
 };
 
 export type PreRegisterOutput = void;

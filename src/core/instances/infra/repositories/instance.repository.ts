@@ -1,23 +1,35 @@
-import { IInstanceRepository } from "../../domain/contracts/instance.interface";
+import { prisma } from "../../../../shared/infra/config/prisma";
+import {
+  IInstanceRepository,
+  InstanceInputParams,
+  InstanceOutputParams,
+} from "../../domain/contracts/instance.interface";
 import { InstanceEntity } from "../../domain/entities/instance.entity";
-import { InstanceModel } from "../models/instance.model";
+import { InstanceModelMapper } from "../models/instance.model.mapper";
 
 export class InstanceRepository implements IInstanceRepository {
-  private instanceModel = InstanceModel;
-
-  async getById(id: string): Promise<InstanceEntity> {
-    const model = await this.instanceModel.findOne({
-      instanceId: id,
+  async getBySessionId(sessionId: string): Promise<InstanceEntity | null> {
+    const model = await prisma.instance.findUnique({
+      where: { sessionId },
     });
 
-    const instance = model ? new InstanceEntity(model) : null;
+    const instance = model ? InstanceModelMapper.toEntity(model) : null;
+
+    return instance;
+  }
+  async getById(id: string): Promise<InstanceEntity> {
+    const model = await prisma.instance.findUnique({
+      where: { id },
+    });
+
+    const instance = model ? InstanceModelMapper.toEntity(model) : null;
 
     return instance;
   }
 
   async getAllUserInstances(userId: string): Promise<InstanceEntity[]> {
-    const models = await this.instanceModel.find({
-      userId,
+    const models = await prisma.instance.findMany({
+      where: { userId },
     });
 
     const entities = models?.map((m) => new InstanceEntity(m));
@@ -25,32 +37,30 @@ export class InstanceRepository implements IInstanceRepository {
     return entities;
   }
 
-  async getAll(): Promise<InstanceEntity[]> {
-    const models = await this.instanceModel.find();
-
-    const entities = models.map((m) => new InstanceEntity(m));
-
-    return entities;
-  }
-
   async createOrUpdate(entity: InstanceEntity): Promise<InstanceEntity> {
-    const modelInserted = await this.instanceModel.findOneAndUpdate(
-      { instanceId: entity.instanceId },
-      {
-        userId: entity.userId,
-        instanceId: entity.instanceId,
-        authPath: entity.authPath,
-      },
-      { upsert: true, new: true }
-    );
+    const modelInserted = await prisma.instance.upsert({
+      where: { id: entity.id },
+      update: InstanceModelMapper.toModel(entity),
+      create: InstanceModelMapper.toModel(entity),
+    });
 
-    const instance = new InstanceEntity(modelInserted);
+    const instance = InstanceModelMapper.toEntity(modelInserted);
 
     return instance;
   }
 
   async delete(id: string): Promise<void> {
-    await this.instanceModel.deleteOne({ instanceId: id });
+    await prisma.instance.delete({ where: { id } });
     return;
+  }
+
+  getAll(props: InstanceInputParams): Promise<InstanceOutputParams> {
+    throw new Error("Method not implemented.");
+  }
+  create(entity: InstanceEntity): Promise<void | InstanceEntity> {
+    throw new Error("Method not implemented.");
+  }
+  update(entity: InstanceEntity): Promise<void | InstanceEntity> {
+    throw new Error("Method not implemented.");
   }
 }
