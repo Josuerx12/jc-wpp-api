@@ -19,21 +19,29 @@ enum RoleEnum {
   USER
 }
 
-model User {
-  id           String           @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  document     String           @unique
-  documentType DocumentTypeEnum
-  email        String           @unique
-  phone        String
-  password     String
-  code         String?          @unique
-  role         RoleEnum         @default(USER)
+enum SubscriptionEnum {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+}
 
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  UserSecret UserSecret[]
-  Instance   Instance[]
+model User {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  stripeCustomerId String?
+  name             String
+  document         String           @unique
+  documentType     DocumentTypeEnum
+  email            String           @unique
+  phone            String
+  password         String
+  code             String?          @unique
+  role             RoleEnum         @default(USER)
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  UserSecret   UserSecret[]
+  Instance     Instance[]
+  Subscription Subscription[]
 
   @@map("users")
 }
@@ -78,4 +86,36 @@ model Instance {
   updatedAt DateTime @updatedAt
 
   @@map("instances")
+}
+
+model Plan {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  instanceLimit Int?
+  priceId       String?
+  price         Int
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  Subscription Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id                   String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String           @db.ObjectId
+  planId               String           @db.ObjectId
+  stripeSubscriptionId String
+  status               SubscriptionEnum
+  startedAt            DateTime
+  currentPeriodEnd     DateTime
+
+  user User @relation(fields: [userId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscriptions")
 }
