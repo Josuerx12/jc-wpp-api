@@ -18,7 +18,7 @@ export class ChangePasswordUseCase
     await this.repository.update(loggedUser);
 
     const email = new MailEntity({
-      to: loggedUser.email,
+      to: loggedUser.email.value,
       subject: "Senha alterada com sucesso",
       html: changedPasswordSuccessEmailHTML(loggedUser.name),
     });

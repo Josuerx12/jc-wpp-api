@@ -24,7 +24,7 @@ export class ResetPasswordUseCase implements UseCase<ResetPasswordInput, void> {
     await this.repository.update(user);
 
     const email = new MailEntity({
-      to: user.email,
+      to: user.email.value,
       subject: "Senha alterada com sucesso",
       html: changedPasswordSuccessEmailHTML(user.name),
     });

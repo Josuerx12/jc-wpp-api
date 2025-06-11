@@ -45,7 +45,7 @@ export class DeleteUserUseCase implements UseCase<DeleteUserInput, void> {
 
     mail.sendMail(
       new MailEntity({
-        to: user.email,
+        to: user.email.value,
         subject: "Sua conta JCWPPAPI foi deletada!",
         html: generateDeletedAccountEmailHTML(user.name),
       })

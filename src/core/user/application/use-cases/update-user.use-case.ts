@@ -37,11 +37,11 @@ export class UpdateUserUseCase implements UseCase<UpdateUserInput, UserEntity> {
       await this.validateDocument(user.document.value);
     }
 
-    if (input.email && input.email != user.email) {
+    if (input.email && input.email != user.email.value) {
       const email = EmailVO.create(input.email);
 
       await this.validateEmail(email.value);
-      user.email = email.value;
+      user.email = email;
     }
 
     if (input.name) {

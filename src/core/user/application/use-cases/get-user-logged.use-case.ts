@@ -1,6 +1,7 @@
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
-import { IUserRepository } from "../contracts/user-repository.interface";
-import { User } from "../entities/user.entity";
+import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
+import { IUserRepository } from "../../domain/contracts/user-repository.interface";
+import { UserEntity } from "../../domain/entities/user.entity";
 
 export class GetUserLoggedUseCase
   implements UseCase<GetUserLoggedInput, GetUserLoggedOutput>
@@ -8,7 +9,7 @@ export class GetUserLoggedUseCase
   constructor(private readonly repository: IUserRepository) {}
 
   async execute(input: GetUserLoggedInput): Promise<GetUserLoggedOutput> {
-    const user = await this.repository.getById(input.user.userId);
+    const user = authStorage.get().user();
 
     delete user.password;
     delete user.code;
@@ -20,9 +21,9 @@ export class GetUserLoggedUseCase
 }
 
 export type GetUserLoggedInput = {
-  user: User;
+  user: UserEntity;
 };
 
 export type GetUserLoggedOutput = {
-  data: User;
+  data: UserEntity;
 };

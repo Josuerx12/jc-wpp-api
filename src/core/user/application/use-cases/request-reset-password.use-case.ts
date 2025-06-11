@@ -36,7 +36,7 @@ export class RequestResetPasswordUseCase
     await this.repository.update(user);
 
     const email = new MailEntity({
-      to: user.email,
+      to: user.email.value,
       subject: "Recuperação de senha",
       html: generateResetPasswordEmailHTML(
         user.name,

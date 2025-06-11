@@ -52,7 +52,7 @@ export class ApproveRegisterUseCase
 
       mail.sendMail(
         new MailEntity({
-          to: entity.email,
+          to: entity.email.value,
           subject: "Cadastro aprovado - Acesse sua conta na JCWPPAPI!",
           html: generateApprovedRegisterEmailHTML(user.name),
         })
