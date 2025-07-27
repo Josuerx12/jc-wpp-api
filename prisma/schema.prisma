@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -26,7 +26,7 @@ enum SubscriptionEnum {
 }
 
 model User {
-  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  id               String           @id @default(cuid())
   stripeCustomerId String?
   name             String
   document         String           @unique
@@ -47,8 +47,8 @@ model User {
 }
 
 model UserSecret {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  userId String @unique @db.ObjectId
+  id     String @id @default(uuid())
+  userId String @unique
   secret String
 
   user User @relation(fields: [userId], references: [id])
@@ -60,7 +60,7 @@ model UserSecret {
 }
 
 model PreRegister {
-  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  id           String           @id @default(uuid())
   documentType DocumentTypeEnum
   document     String           @unique
   email        String           @unique
@@ -75,9 +75,9 @@ model PreRegister {
 }
 
 model Instance {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  id        String @id @default(uuid())
   sessionId String @unique
-  userId    String @db.ObjectId
+  userId    String
   authPath  String
 
   user User @relation(fields: [userId], references: [id])
@@ -89,7 +89,7 @@ model Instance {
 }
 
 model Plan {
-  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  id            String  @id @default(uuid())
   name          String
   instanceLimit Int?
   priceId       String?
@@ -103,9 +103,9 @@ model Plan {
 }
 
 model Subscription {
-  id                   String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId               String           @db.ObjectId
-  planId               String           @db.ObjectId
+  id                   String           @id @default(uuid())
+  userId               String
+  planId               String
   stripeSubscriptionId String
   status               SubscriptionEnum
   startedAt            DateTime

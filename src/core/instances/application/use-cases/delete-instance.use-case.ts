@@ -1,14 +1,14 @@
 import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
 import fs from "fs";
 import { IInstanceRepository } from "../../domain/contracts/instance.interface";
+import { Boom } from "@hapi/boom";
+import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
+import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
 import makeWASocket, {
   DisconnectReason,
   fetchLatestBaileysVersion,
   useMultiFileAuthState,
-} from "@whiskeysockets/baileys";
-import { Boom } from "@hapi/boom";
-import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
-import { AppError } from "../../../../shared/infra/middlewares/error.middleware";
+} from "baileys";
 
 export class DeleteInstanceUseCase
   implements UseCase<DeleteInstanceInput, void>

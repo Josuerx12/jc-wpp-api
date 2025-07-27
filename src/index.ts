@@ -1,13 +1,10 @@
 import express from "express";
-import { connectDB } from "./shared/infra/config/db";
 import { config } from "dotenv";
 import router from "./shared/infra/routes/router";
 import cors from "cors";
 import { errorMiddleware } from "./shared/infra/middlewares/error.middleware";
 import authStorage from "./shared/infra/routes/auth/auth.storage";
 config();
-
-connectDB();
 
 const app = express();
 

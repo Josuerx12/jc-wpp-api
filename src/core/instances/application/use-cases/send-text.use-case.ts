@@ -1,9 +1,9 @@
-import {
+import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
+import makeWASocket, {
+  DisconnectReason,
   fetchLatestBaileysVersion,
   useMultiFileAuthState,
-} from "@whiskeysockets/baileys";
-import { UseCase } from "../../../../shared/domain/contracts/use-case.interface";
-import makeWASocket, { DisconnectReason } from "baileys";
+} from "baileys";
 import { Boom } from "@hapi/boom";
 import { IInstanceRepository } from "../../domain/contracts/instance.interface";
 

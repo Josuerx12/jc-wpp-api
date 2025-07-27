@@ -2,11 +2,11 @@ import { UseCase } from "../../../../shared/domain/contracts/use-case.interface"
 import QRCode from "qrcode";
 import { v4 } from "uuid";
 import fs from "fs";
-import {
+import makeWASocket, {
+  DisconnectReason,
   fetchLatestBaileysVersion,
   useMultiFileAuthState,
-} from "@whiskeysockets/baileys";
-import makeWASocket, { DisconnectReason } from "baileys";
+} from "baileys";
 import { Boom } from "@hapi/boom";
 import { instanceEvents } from "../../../../shared/infra/events/sse-event.emitter";
 import authStorage from "../../../../shared/infra/routes/auth/auth.storage";
@@ -50,6 +50,16 @@ export class ConnectInstanceUseCase
 
       sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect, qr } = update;
+
+        console.log("--------------------------------------------");
+        console.log("--------------------------------------------");
+
+        console.log("QR Code: ", qr);
+        console.log(resolved);
+        console.log(connected);
+
+        console.log("--------------------------------------------");
+        console.log("--------------------------------------------");
 
         if (qr && !resolved) {
           try {

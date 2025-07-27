@@ -1,3 +1,5 @@
+import { v4 } from "uuid";
+
 type EntityProps = {
   id?: string;
   userId: string;
@@ -16,7 +18,7 @@ export class InstanceEntity {
   updatedAt?: Date;
 
   constructor(props: EntityProps) {
-    this.id = props.id;
+    this.id = props.id || v4();
     this.userId = props.userId;
     this.sessionId = props.sessionId;
     this.authPath = props.authPath;

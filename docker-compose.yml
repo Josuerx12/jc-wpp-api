@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  jcwpp_db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: jcwppapi
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5438:5432"
+    volumes:
+      - jcwpp_db_data:/var/lib/postgresql/data
+
+volumes:
+  jcwpp_db_data:
