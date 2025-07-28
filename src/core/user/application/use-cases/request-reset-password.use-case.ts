@@ -45,7 +45,7 @@ export class RequestResetPasswordUseCase
       ),
     });
 
-    mail.sendMail(email);
+    await mail.sendMail(email);
   }
 }
 

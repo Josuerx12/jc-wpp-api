@@ -36,10 +36,10 @@ export class PreRegisterRepository implements IPreRegisterRepository {
   ): Promise<PreRegisterOutputParams> {
     const where: Prisma.PreRegisterWhereInput = {
       OR: [
-        { email: { contains: props.filter, mode: "insensitive" } },
-        { document: { contains: props.filter, mode: "insensitive" } },
-        { name: { contains: props.filter, mode: "insensitive" } },
-        { phone: { contains: props.filter, mode: "insensitive" } },
+        { email: { contains: props.filter || "", mode: "insensitive" } },
+        { document: { contains: props.filter || "", mode: "insensitive" } },
+        { name: { contains: props.filter || "", mode: "insensitive" } },
+        { phone: { contains: props.filter || "", mode: "insensitive" } },
       ],
     };
 

@@ -28,7 +28,7 @@ export class ApproveRegisterUseCase
 
       const preRegister = await this.preRegisterRepo.getById(input.id);
 
-      if (user && user.isUser) {
+      if (user?.isUser()) {
         throw new AppError(
           "Você não tem permissão para acessar essa rota",
           401
