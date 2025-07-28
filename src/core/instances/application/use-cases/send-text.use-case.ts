@@ -64,7 +64,7 @@ export class SendTextUseCase implements UseCase<SendTextInput, void> {
             console.log(`🔄 Tentando reconectar sessão ${input.sessionId}...`);
             setTimeout(
               () => this.execute(input).then(resolve).catch(reject),
-              3000
+              4500
             );
           } else {
             reject(new Error("Sessão deslogada. Requer novo QR Code."));
