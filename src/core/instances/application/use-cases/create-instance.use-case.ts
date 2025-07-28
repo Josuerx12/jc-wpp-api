@@ -48,18 +48,16 @@ export class ConnectInstanceUseCase
       let resolved = false;
       let connected = false;
 
+      sock.ws?.on("error", (err) => {
+        console.warn(`🧯 WebSocket error ignorado: ${err.message}`);
+      });
+
+      sock.ws?.on("close", (code, reason) => {
+        console.log(`🔌 WebSocket closed (${code}): ${reason}`);
+      });
+
       sock.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect, qr } = update;
-
-        console.log("--------------------------------------------");
-        console.log("--------------------------------------------");
-
-        console.log("QR Code: ", qr);
-        console.log(resolved);
-        console.log(connected);
-
-        console.log("--------------------------------------------");
-        console.log("--------------------------------------------");
 
         if (qr && !resolved) {
           try {
@@ -112,14 +110,30 @@ export class ConnectInstanceUseCase
               bussinessProfile,
               avatarUrl,
             });
+
             if (connected) {
               setTimeout(() => {
-                sock.end(null);
-              }, 3000);
+                try {
+                  sock.ev.removeAllListeners("connection.update");
+                  sock.ev.removeAllListeners("creds.update");
+                  sock.end(null);
+                } catch (err) {
+                  if (
+                    err instanceof Error &&
+                    err.message.includes("Connection Closed")
+                  ) {
+                    console.warn(
+                      `🔌 Conexão finalizada manualmente para ${sessionId}.`
+                    );
+                  } else {
+                    console.error("Erro ao finalizar a conexão:", err);
+                  }
+                }
+              }, 1000);
             }
           } catch (error) {
             console.log(error);
-            reject(new Error("Erro ao salvar instancia no banco de dados"));
+            reject("Erro ao salvar instancia no banco de dados");
           }
         }
 

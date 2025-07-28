@@ -50,7 +50,7 @@ export class InstanceRepository implements IInstanceRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await prisma.instance.delete({ where: { id } });
+    await prisma.instance.delete({ where: { sessionId: id } });
     return;
   }
 
